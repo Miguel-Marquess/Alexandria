@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Enum, ForeignKey, func
+from sqlalchemy import DateTime, Enum, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, registry, relationship
 
 from library_management.schemas.loans_schemas import LoanStatus
@@ -16,9 +16,14 @@ class UserDatabase:
     username: Mapped[str] = mapped_column(nullable=False)
     email: Mapped[str] = mapped_column(nullable=False, unique=True)
     password: Mapped[str] = mapped_column(nullable=False)
-    created_at: Mapped[datetime] = mapped_column(init=False, server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), init=False, server_default=func.now()
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        init=False, onupdate=func.now(), server_default=func.now()
+        DateTime(timezone=True),
+        init=False,
+        onupdate=func.now(),
+        server_default=func.now(),
     )
     loans: Mapped[list['LoanDatabase']] = relationship(
         back_populates='user', lazy='selectin', init=False
@@ -50,9 +55,13 @@ class LoanDatabase:
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     book_id: Mapped[str] = mapped_column(ForeignKey('books.id'))
-    loan_date: Mapped[datetime] = mapped_column(init=False, server_default=func.now())
-    due_date: Mapped[datetime]
-    returned_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
+    loan_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), init=False, server_default=func.now()
+    )
+    due_date: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    returned_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None
+    )
     status: Mapped[LoanStatus] = mapped_column(
         Enum(LoanStatus), default=LoanStatus.ACTIVE
     )
