@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -25,23 +25,31 @@ class LoanService:
             .where(BookDatabase.isbn == book_isbn)
         )
 
-    async def get_all_user_loans(self, user):
-        return (
-            await self.session.scalars(
-                select(LoanDatabase).where(
-                    LoanDatabase.user_id == user.id,
-                )
-            )
-        ).all()
-
     async def create_loan(self, book_isbn: str, user: UserDatabase):
+        late_loans = await self.session.scalar(
+            select(LoanDatabase).where(
+                LoanDatabase.user_id == user.id,
+                LoanDatabase.status == LoanStatus.ACTIVE,
+                LoanDatabase.due_date < datetime.now(tz=ZoneInfo('UTC')),
+            )
+        )
+        if late_loans:
+            raise HTTPException(
+                status_code=409,
+                detail='You have late loans. Verify your loans and try again.',
+            )
+
         book = await self.get_book(book_isbn)
 
-        active_loans = sum(
-            1
-            for loan in await self.get_all_user_loans(user)
-            if loan.status == LoanStatus.ACTIVE
+        active_loans = await self.session.scalar(
+            select(func.count())
+            .select_from(LoanDatabase)
+            .where(
+                LoanDatabase.user_id == user.id,
+                LoanDatabase.status == LoanStatus.ACTIVE,
+            )
         )
+
         has_already_loan = await self.session.scalar(
             select(LoanDatabase)
             .join(BookDatabase)
@@ -51,6 +59,7 @@ class LoanService:
                 LoanDatabase.status == LoanStatus.ACTIVE,
             )
         )
+
         if has_already_loan:
             raise HTTPException(
                 status_code=409, detail='You already a loan with this Book.'

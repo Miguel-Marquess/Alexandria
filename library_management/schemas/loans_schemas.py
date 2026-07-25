@@ -1,7 +1,10 @@
 from datetime import datetime
 from enum import Enum
+from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, computed_field
+
+from library_management.schemas.core_schemas import FilterPage
 
 
 class LoanStatus(str, Enum):
@@ -22,6 +25,13 @@ class LoanPublic(BaseModel):
     returned_at: datetime | None = None
     status: LoanStatus
 
+    @computed_field  # permite property serializaveis
+    @property  # trata metodo como atributo
+    def is_overdue(self) -> bool:
+        return self.status == LoanStatus.ACTIVE and self.due_date < datetime.now(
+            tz=ZoneInfo('UTC')
+        )
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -29,3 +39,9 @@ class LoanList(BaseModel):
     loans: list['LoanPublic']
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class LoanFilter(FilterPage):
+    status: LoanStatus | None = None
+    book_id: int | None = None
+    overdue: bool | None = None
