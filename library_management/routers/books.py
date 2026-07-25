@@ -14,6 +14,7 @@ from library_management.schemas.books_schemas import (
     Book,
     BookList,
     BookPublic,
+    BookOrder
 )
 
 router = APIRouter(tags=['library'], prefix='/books')
@@ -53,7 +54,7 @@ async def read_books(filter: BookFilter, current_user: Current_user, session: Se
     if filter.author_name:
         query = query.join(Author).where(Author.name.contains(filter.author_name))
 
-    map = {
+    book_filters = {
         'title': lambda v: BookDatabase.title.contains(v),
         'author_id': lambda v: BookDatabase.author_id == v,
         'year': lambda v: BookDatabase.year == v,
@@ -61,9 +62,20 @@ async def read_books(filter: BookFilter, current_user: Current_user, session: Se
     }
 
     for key, value in filter.model_dump(exclude_none=True).items():
-        if key in map:
-            query = query.where(map[key](value))
+        if key in book_filters:
+            query = query.where(book_filters[key](value))
 
+    order = {
+        BookOrder.title: BookDatabase.title,
+        BookOrder.year: BookDatabase.year,
+        BookOrder.author_name: Author.name,
+        BookOrder.publisher: BookDatabase.publisher,
+        BookOrder.isbn: BookDatabase.isbn,
+    }
+
+    if filter.order_by:
+        query = query.join(Author)
+        query = query.order_by(order[filter.order_by])
     result = await session.scalars(query.offset(filter.start).limit(filter.ends))
 
     return {'books': result}

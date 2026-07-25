@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-
+from enum import Enum
 from library_management.schemas.core_schemas import FilterPage
 
 
@@ -11,7 +11,6 @@ class Book(BaseModel):
     publisher: str
     quantity: int
     availables: int
-
 
 class BookPublic(Book):
     id: int
@@ -35,6 +34,12 @@ class AuthorPublic(AuthorSchema):
 class AuthorsList(BaseModel):
     authors: list[AuthorPublic]
 
+class BookOrder(Enum):
+    title = 'title'
+    author_name = 'author_name'
+    year = 'year'
+    publisher = 'publisher'
+    isbn = 'isbn'
 
 class FilterBook(FilterPage):
     title: str | None = None
@@ -43,3 +48,4 @@ class FilterBook(FilterPage):
     year: int | None = None
     publisher: str | None = None
     isbn: str | None = None
+    order_by: BookOrder | None = None
