@@ -1,3 +1,4 @@
+from datetime import datetime
 from http import HTTPStatus
 
 import pytest
@@ -5,6 +6,7 @@ from sqlalchemy import select
 
 from library_management.models.db_models import BookDatabase, LoanDatabase
 from library_management.schemas.loans_schemas import LoanPublic, LoanStatus
+from tests.conftest import BookFactory, LoanFactory
 
 
 @pytest.mark.asyncio
@@ -74,3 +76,26 @@ async def test_create_loan_book_not_availables(client, session, token, book_db):
 
     assert response.status_code == HTTPStatus.CONFLICT
     assert response.json() == {'detail': 'Book is not available.'}
+
+
+@pytest.mark.asyncio
+async def test_create_loan_user_have_late_loans_in_database(
+    client, token, session, book_db, user
+):
+    book = BookFactory()
+    loan = LoanFactory(
+        due_date=datetime(2026, 6, 11), book_id=book_db.id, user_id=user.id
+    )
+
+    session.add_all([loan, book])
+    await session.commit()
+    await session.refresh(loan)
+
+    response = client.post(
+        f'/loans/{book.isbn}', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {
+        'detail': 'You have late loans. Verify your loans and try again.'
+    }

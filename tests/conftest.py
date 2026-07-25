@@ -18,7 +18,7 @@ from library_management.models.db_models import (
     UserDatabase,
     registry_table,
 )
-from library_management.schemas.loans_schemas import LoanStatus
+from library_management.schemas.loans_schemas import LoanPublic, LoanStatus
 from library_management.security import get_password_hash
 
 
@@ -239,3 +239,10 @@ async def many_authors(session):
             serialize_author(to_serialize_author) for to_serialize_author in authors
         ]
     }
+
+
+@pytest.fixture
+def three_loans_json(three_loans):
+    return [
+        LoanPublic.model_validate(loan).model_dump(mode='json') for loan in three_loans
+    ]
