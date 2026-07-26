@@ -133,6 +133,7 @@ def test_create_author_with_name_none(client, token, session):
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
     assert response.json() == {'detail': 'Author name cannot be None.'}
 
+
 def test_get_book_order_by(client, token, many_books):
     response = client.get(
         '/books',

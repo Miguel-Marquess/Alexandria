@@ -8,13 +8,14 @@ from library_management.depends.database_dependencies import Session
 from library_management.depends.users_dependencies import Current_user
 from library_management.models.db_models import Author, BookDatabase
 from library_management.schemas.books_schemas import (
+    AuthorFilter,
     AuthorPublic,
     AuthorSchema,
     AuthorsList,
     Book,
     BookList,
+    BookOrder,
     BookPublic,
-    BookOrder
 )
 
 router = APIRouter(tags=['library'], prefix='/books')
@@ -74,8 +75,10 @@ async def read_books(filter: BookFilter, current_user: Current_user, session: Se
     }
 
     if filter.order_by:
-        query = query.join(Author)
+        if filter.order_by == BookOrder.author_name and not filter.author_name:
+            query = query.join(Author)
         query = query.order_by(order[filter.order_by])
+
     result = await session.scalars(query.offset(filter.start).limit(filter.ends))
 
     return {'books': result}
@@ -83,15 +86,18 @@ async def read_books(filter: BookFilter, current_user: Current_user, session: Se
 
 @router.get('/authors', response_model=AuthorsList, status_code=200)
 async def read_authors(
-    author_schema: Annotated[AuthorSchema, Query()],
+    author_filter: Annotated[AuthorFilter, Query()],
     session: Session,
     user: Current_user,
 ):
     query = select(Author)
-    author_name = author_schema.name
+    author_name = author_filter.name
 
     if author_name:
         query = query.where(Author.name.contains(author_name))
+
+    if author_filter.order:
+        query = query.order_by(Author.name)
 
     authors = await session.scalars(query)
 
@@ -108,3 +114,6 @@ async def create_author(author: AuthorSchema, user: Current_user, session: Sessi
     await session.commit()
 
     return author
+
+
+# adicionar ordenacoes

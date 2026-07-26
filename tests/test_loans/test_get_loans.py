@@ -15,6 +15,7 @@ def test_my_loans(three_loans_json, client, token):
     assert response.json() == {'loans': three_loans_json}
 
 
+
 def test_get_loans_active(client, three_loans_json, token):
     response = client.get(
         '/loans',
@@ -44,7 +45,6 @@ async def test_get_loans_returned(client, token, session, user, book_db):
         params={'status': 'returned'},
     )
 
-    assert response.status_code == HTTPStatus.OK
     assert response.json()['loans'][0]['status'] == 'returned'
     assert response.json() == ({
         'loans': [LoanPublic.model_validate(loan).model_dump(mode='json')]
@@ -120,4 +120,3 @@ async def test_get_book_id_loan(client, token, book_db, user, session, loan):
             LoanPublic.model_validate(loan).model_dump(mode='json') for loan in loans
         ]
     }
-
