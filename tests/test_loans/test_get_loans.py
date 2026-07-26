@@ -15,7 +15,6 @@ def test_my_loans(three_loans_json, client, token):
     assert response.json() == {'loans': three_loans_json}
 
 
-
 def test_get_loans_active(client, three_loans_json, token):
     response = client.get(
         '/loans',
