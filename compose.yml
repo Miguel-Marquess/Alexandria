@@ -2,16 +2,16 @@ services:
   library_database:
     image: postgres:17
     environment:
-      POSTGRES_USER: library_system
-      POSTGRES_DB: library_system_database
-      POSTGRES_PASSWORD: library_system_password
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       
   library_app:
-    image: library_management_app
+    image: alexandria_app
     entrypoint: ./entrypoint.sh
     build: .
     ports:
@@ -19,7 +19,7 @@ services:
     depends_on:
       - library_database
     environment:
-      DATABASE_URL: postgresql+psycopg://library_system:library_system_password@library_database:5432/library_system_database
-      
+      DATABASE_URL: ${DATABASE_URL}
+     
 volumes:
   pgdata:
