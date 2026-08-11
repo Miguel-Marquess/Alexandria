@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from library_management.depends.books_dependencies import BookFilter
 from library_management.depends.database_dependencies import Session
@@ -17,6 +18,7 @@ from library_management.schemas.books_schemas import (
     BookOrder,
     BookPublic,
 )
+from library_management.schemas.core_schemas import Message
 
 router = APIRouter(tags=['library'], prefix='/books')
 
@@ -42,13 +44,22 @@ async def insert_books(book: Book, session: Session, current_user: Current_user)
 @router.get('/', status_code=200, response_model=BookList)
 async def read_books(filter: BookFilter, current_user: Current_user, session: Session):
     query = select(BookDatabase)
-    if filter.isbn:
-        book = await session.scalar(
-            select(BookDatabase).where(BookDatabase.isbn == filter.isbn)
-        )
+    if filter.isbn or filter.book_id:
+        if filter.isbn:
+            book = await session.scalar(
+                select(BookDatabase).where(BookDatabase.isbn == filter.isbn)
+            )
 
-        if not book:
-            raise HTTPException(status_code=404, detail='ISBN is not valid.')
+            if not book:
+                raise HTTPException(status_code=404, detail='ISBN is not valid.')
+
+        if filter.book_id:
+            book = await session.scalar(
+                select(BookDatabase).where(BookDatabase.id == filter.book_id)
+            )
+
+            if not book:
+                raise HTTPException(status_code=404, detail='This Book ID not exist.')
 
         return {'books': [book]}
 
@@ -84,6 +95,26 @@ async def read_books(filter: BookFilter, current_user: Current_user, session: Se
     return {'books': result}
 
 
+@router.delete('/{book_isbn}', status_code=200, response_model=Message)
+async def delete_book(book_isbn: str, user: Current_user, session: Session):
+    book = await session.scalar(
+        select(BookDatabase).where(BookDatabase.isbn == book_isbn)
+    )
+
+    if book:
+        if book.quantity != book.availables:
+            raise HTTPException(
+                status_code=409, detail='Book is currently on loan. Cannot delete him.'
+            )
+
+    if not book:
+        raise HTTPException(status_code=404, detail='Book not exist. Verify the ISBN')
+
+    await session.delete(book)
+
+    return {'message': 'Book was deleted.'}
+
+
 @router.get('/authors', response_model=AuthorsList, status_code=200)
 async def read_authors(
     author_filter: Annotated[AuthorFilter, Query()],
@@ -116,4 +147,21 @@ async def create_author(author: AuthorSchema, user: Current_user, session: Sessi
     return author
 
 
-# adicionar ordenacoes
+@router.delete('/author/{author_id}', status_code=200, response_model=Message)
+async def delete_author(author_id: int, user: Current_user, session: Session):
+    author = await session.scalar(
+        select(Author).options(selectinload(Author.books)).where(Author.id == author_id)
+    )
+    if not author:
+        raise HTTPException(status_code=404, detail='Author not exist. Verify the ID.')
+
+    if author.books:
+        raise HTTPException(
+            status_code=409,
+            detail='Author has registered books. If you want continue, '
+            'delete the authors books.',
+        )
+
+    await session.delete(author)
+
+    return {'message': 'Author was deleted.'}

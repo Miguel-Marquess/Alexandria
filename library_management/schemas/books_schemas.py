@@ -53,6 +53,7 @@ class FilterBook(FilterPage):
     year: int | None = None
     publisher: str | None = None
     isbn: str | None = None
+    book_id: int | None = None
     order_by: BookOrder | None = None
 
 

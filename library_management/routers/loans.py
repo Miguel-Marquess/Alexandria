@@ -27,6 +27,7 @@ async def devolution(loan_id: int, user: Current_user, session: Session):
 @router.get('/', status_code=200, response_model=LoanList)
 async def my_loans(user: Current_user, session: Session, filter: FilterLoan):
     query = select(LoanDatabase).where(LoanDatabase.user_id == user.id)
+    # colocar verificacao se o usuario e admin ou nao, se sim, podera puxar todos os loans
 
     if filter.status:
         query = query.where(LoanDatabase.status == filter.status)
