@@ -9,3 +9,6 @@ class Settings(BaseSettings):
     TOKEN_SECRET_KEY: str
     ALGORITHM: str
     MAX_VALUE_LOANS: int
+    POSTGRES_USER: str
+    POSTGRES_DB: str
+    POSTGRES_PASSWORD: str
