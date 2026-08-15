@@ -39,7 +39,9 @@ def test_create_loan_has_already_loan(client, loan, token, book_db):
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {'detail': 'You already a loan with this Book.'}
+    assert response.json() == (
+        f'You already a loan (ID [{loan.id}]) with this Book (ISBN [{book_db.isbn}]).'
+    )
 
 
 def test_create_loan_book_not_exist(client, token):
@@ -49,7 +51,7 @@ def test_create_loan_book_not_exist(client, token):
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'Book not found. Verify the ISBN.'}
+    assert response.json() == f'Book with ISBN {1} not found. Verify.'
 
 
 def test_create_loan_has_max_limit(client, token, book_db, three_loans):
@@ -59,9 +61,7 @@ def test_create_loan_has_max_limit(client, token, book_db, three_loans):
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {
-        'detail': 'User has reached the maximum number of active loans.'
-    }
+    assert response.json() == 'User has reached the maximum number of active loans.'
 
 
 @pytest.mark.asyncio
@@ -75,7 +75,7 @@ async def test_create_loan_book_not_availables(client, session, token, book_db):
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {'detail': 'Book is not available.'}
+    assert response.json() == f'Book (ISBN [{book_db.isbn}]) is not available.'
 
 
 @pytest.mark.asyncio
@@ -96,6 +96,6 @@ async def test_create_loan_user_have_late_loans_in_database(
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {
-        'detail': 'You have late loans. Verify your loans and try again.'
-    }
+    assert response.json() == (
+        f"You have late loans with ID's [{loan.id}]. Verify and try again."
+    )

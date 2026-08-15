@@ -2,11 +2,21 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from fastapi import HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from library_management.exceptions.books_exceptions import (
+    BookNotAvailable,
+    BookNotFound,
+)
+from library_management.exceptions.loans_exceptions import (
+    HasAlreadyLoanWithBook,
+    LateLoans,
+    LoanAlreadyReturned,
+    LoanNotFound,
+    MaxUserLoans,
+)
 from library_management.models.db_models import BookDatabase, LoanDatabase, UserDatabase
 from library_management.schemas.loans_schemas import LoanPublic, LoanStatus
 from library_management.settings import Settings
@@ -26,18 +36,18 @@ class LoanService:
         )
 
     async def create_loan(self, book_isbn: str, user: UserDatabase):
-        late_loans = await self.session.scalar(
-            select(LoanDatabase).where(
-                LoanDatabase.user_id == user.id,
-                LoanDatabase.status == LoanStatus.ACTIVE,
-                LoanDatabase.due_date < datetime.now(tz=ZoneInfo('UTC')),
+        late_loans = (
+            await self.session.scalars(
+                select(LoanDatabase).where(
+                    LoanDatabase.user_id == user.id,
+                    LoanDatabase.status == LoanStatus.ACTIVE,
+                    LoanDatabase.due_date < datetime.now(tz=ZoneInfo('UTC')),
+                )
             )
-        )
+        ).all()
+
         if late_loans:
-            raise HTTPException(
-                status_code=409,
-                detail='You have late loans. Verify your loans and try again.',
-            )
+            raise LateLoans([loan.id for loan in late_loans])
 
         book = await self.get_book(book_isbn)
 
@@ -61,19 +71,15 @@ class LoanService:
         )
 
         if has_already_loan:
-            raise HTTPException(
-                status_code=409, detail='You already a loan with this Book.'
+            raise HasAlreadyLoanWithBook(
+                has_already_loan.id, has_already_loan.book.isbn
             )
-
         if not book:
-            raise HTTPException(404, detail='Book not found. Verify the ISBN.')
+            raise BookNotFound(book_isbn)
         if active_loans >= settings.MAX_VALUE_LOANS:
-            raise HTTPException(
-                status_code=409,
-                detail='User has reached the maximum number of active loans.',
-            )
+            raise MaxUserLoans()
         if book.availables <= 0:
-            raise HTTPException(status_code=409, detail='Book is not available.')
+            raise BookNotAvailable(book_isbn)
 
         book.availables -= 1
         loan = LoanDatabase(
@@ -100,10 +106,10 @@ class LoanService:
         )
 
         if not loan:
-            raise HTTPException(status_code=404, detail='Loan not exist.')
+            raise LoanNotFound(loan_id)
 
         if loan.status == LoanStatus.RETURNED:
-            raise HTTPException(status_code=409, detail='Loan is already returned.')
+            raise LoanAlreadyReturned(loan.id)
 
         loan.returned_at = datetime.now(tz=ZoneInfo('UTC'))
         loan.status = LoanStatus.RETURNED
