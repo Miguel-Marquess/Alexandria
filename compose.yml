@@ -1,5 +1,5 @@
 services:
-  library_database:
+  alexandria_database:
     image: postgres:17
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -10,14 +10,14 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       
-  library_app:
+  alexandria_app:
     image: alexandria_app
     entrypoint: ./entrypoint.sh
     build: .
     ports:
       - "8000:8000"
     depends_on:
-      - library_database
+      - alexandria_database
     environment:
       DATABASE_URL: ${DATABASE_URL}
      

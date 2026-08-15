@@ -31,12 +31,11 @@ async def test_return_loan(client, book_db, loan, session, token):
 
 def test_return_not_existent_loan(client, token):
     response = client.patch(
-        f'/loans/{99999}/return', headers={'Authorization': f'Bearer {token}'}
+        f'/loans/{-1}/return', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'Loan not exist.'}
-
+    assert response.json() == 'Loan (ID [-1]) not found.'
 
 def test_return_loan_already_returned(client, token, loan):
     response = client.patch(
@@ -50,4 +49,4 @@ def test_return_loan_already_returned(client, token, loan):
     )
 
     assert response2.status_code == HTTPStatus.CONFLICT
-    assert response2.json() == {'detail': 'Loan is already returned.'}
+    assert response2.json() == f'Loan (ID [{loan.id}]) is already returned.'
