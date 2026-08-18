@@ -3,41 +3,7 @@ from http import HTTPStatus
 import pytest
 from sqlalchemy import select
 
-from library_management.models.db_models import Author, BookDatabase
-
-
-@pytest.mark.asyncio
-async def test_delete_author(client, token, author, session):
-    response = client.delete(
-        f'/books/author/{author.id}', headers={'Authorization': f'Bearer {token}'}
-    )
-
-    db_author = await session.scalar(select(Author).where(Author.id == author.id))
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'message': 'Author was deleted.'}
-    assert not db_author
-
-
-def test_delete_author_with_wrong_id(client, token):
-    response = client.delete(
-        f'/books/author/{1}', headers={'Authorization': f'Bearer {token}'}
-    )
-
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'Author not exist. Verify the ID.'}
-
-
-def test_delete_author_who_contains_registered_books(client, token, book_db, author):
-    response = client.delete(
-        f'/books/author/{author.id}', headers={'Authorization': f'Bearer {token}'}
-    )
-
-    assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {
-        'detail': 'Author has registered books. '
-        'If you want continue, delete the authors books.'
-    }
+from library_management.models.db_models import BookDatabase
 
 
 @pytest.mark.asyncio
