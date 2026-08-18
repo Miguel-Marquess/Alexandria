@@ -51,7 +51,7 @@ def test_create_loan_book_not_exist(client, token):
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == f'Book with ISBN {1} not found. Verify.'
+    assert response.json() == 'Book (ISBN [1]) not found. Verify.'
 
 
 def test_create_loan_has_max_limit(client, token, book_db, three_loans):
