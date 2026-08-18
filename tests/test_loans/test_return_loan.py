@@ -37,6 +37,7 @@ def test_return_not_existent_loan(client, token):
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == 'Loan (ID [-1]) not found.'
 
+
 def test_return_loan_already_returned(client, token, loan):
     response = client.patch(
         f'/loans/{loan.id}/return', headers={'Authorization': f'Bearer {token}'}

@@ -24,4 +24,4 @@ def test_insert_book_author_not_found(client, token, book):
     book.update({'id': 1})
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == ({'detail': 'Author with id 0 not exist.'})
+    assert response.json() == 'Author (ID [0]) not found.'
