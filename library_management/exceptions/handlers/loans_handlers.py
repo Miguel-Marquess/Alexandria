@@ -4,9 +4,9 @@ from fastapi.responses import JSONResponse, Response
 from library_management.exceptions.loans_exceptions import (
     HasAlreadyLoanWithBook,
     LateLoans,
+    LoanAlreadyReturned,
     LoanNotFound,
     MaxUserLoans,
-    LoanAlreadyReturned
 )
 
 handler = FastAPI()
@@ -48,19 +48,18 @@ async def loan_not_found_handler(res: Response, exc: LoanNotFound):
         status_code=404, content=f'Loan (ID [{exc.loan_id}]) not found.'
     )
 
+
 @handler.exception_handler(LoanAlreadyReturned)
-async def loan_has_already_returned_handler(
-    res: Response, exc: LoanAlreadyReturned
-):
+async def loan_has_already_returned_handler(res: Response, exc: LoanAlreadyReturned):
     return JSONResponse(
-        status_code=409,
-        content=f'Loan (ID [{exc.loan_id}]) is already returned.'
+        status_code=409, content=f'Loan (ID [{exc.loan_id}]) is already returned.'
     )
+
 
 loans_exc_handlers = {
     LateLoans: late_loans_handler,
     HasAlreadyLoanWithBook: has_already_loan_with_book_handler,
     MaxUserLoans: max_user_loans_handler,
     LoanNotFound: loan_not_found_handler,
-    LoanAlreadyReturned: loan_has_already_returned_handler
+    LoanAlreadyReturned: loan_has_already_returned_handler,
 }

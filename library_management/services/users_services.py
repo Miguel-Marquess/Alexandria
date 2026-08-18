@@ -32,7 +32,7 @@ class UserService:
     ) -> UserDatabase:
         for key, value in user_update.model_dump(
             exclude_unset=True, exclude={'password'}
-        ):
+        ).items():
             setattr(current_user, key, value)
 
         if user_update.password:

@@ -29,7 +29,7 @@ def test_invalid_isbn(client, token):
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'ISBN is not valid.'}
+    assert response.json() == {'detail': 'Book ID or ISBN invalid.'}
 
 
 def test_get_book_by_author_name(client, book_db, token):
