@@ -24,20 +24,6 @@ class BookList(BaseModel):
     books: list[BookPublic]
 
 
-class AuthorSchema(BaseModel):
-    name: str | None = None
-
-
-class AuthorPublic(AuthorSchema):
-    id: int
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class AuthorsList(BaseModel):
-    authors: list[AuthorPublic]
-
-
 class BookOrder(Enum):
     title = 'title'
     author_name = 'author_name'
@@ -55,7 +41,3 @@ class FilterBook(FilterPage):
     isbn: str | None = None
     book_id: int | None = None
     order_by: BookOrder | None = None
-
-
-class AuthorFilter(AuthorSchema):
-    order: bool | None = None
