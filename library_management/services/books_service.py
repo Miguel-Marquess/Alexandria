@@ -1,10 +1,14 @@
 from dataclasses import dataclass
 
-from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from library_management.exceptions.books_exceptions import BookNotFound
+from library_management.exceptions.authors_exceptions import AuthorNotFound
+from library_management.exceptions.books_exceptions import (
+    BookIdOrIsbnNotFound,
+    BookInCurrentLoan,
+    BookNotFound,
+)
 from library_management.models.db_models import Author, BookDatabase
 from library_management.schemas.books_schemas import Book, BookOrder, FilterBook
 
@@ -19,10 +23,7 @@ class BookService:
         )
 
         if not author_db:
-            raise HTTPException(
-                status_code=404,
-                detail=f'Author with id {book_schema.author_id} not exist.',
-            )
+            raise AuthorNotFound(book_schema.author_id)
 
         db_book = BookDatabase(
             **book_schema.model_dump(exclude={'author_id'}), author=author_db
@@ -49,7 +50,7 @@ class BookService:
             book = await self.session.scalar(select(BookDatabase).where(*filters))
 
             if not book:
-                raise HTTPException(status_code=404, detail='Book ID or ISBN invalid.')
+                raise BookIdOrIsbnNotFound()
 
             return [book]
 
@@ -95,9 +96,6 @@ class BookService:
             raise BookNotFound(book_isbn)
 
         if book.quantity != book.availables:
-            raise HTTPException(
-                status_code=409,
-                detail='Book is currently on loan. Cannot delete him.',
-            )
+            raise BookInCurrentLoan(book.isbn)
 
         await self.session.delete(book)

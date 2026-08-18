@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 
-from library_management.exceptions.handlers import books_handlers, loans_handlers
+from library_management.exceptions.handlers import (
+    authors_handlers,
+    books_handlers,
+    loans_handlers,
+)
 from library_management.routers import auth, books, loans, users
 
 app = FastAPI(title='Library System', version='0.1.0')
@@ -13,6 +17,9 @@ for exc, func_handler in books_handlers.book_exc_handlers.items():
     app.add_exception_handler(exc, func_handler)
 
 for exc, func_handler in loans_handlers.loans_exc_handlers.items():
+    app.add_exception_handler(exc, func_handler)
+
+for exc, func_handler in authors_handlers.author_exc_handlers.items():
     app.add_exception_handler(exc, func_handler)
 
 
