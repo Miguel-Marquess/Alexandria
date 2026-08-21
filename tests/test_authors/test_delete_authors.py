@@ -12,10 +12,10 @@ def test_delete_author_who_contains_registered_books(client, token, book_db, aut
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {
-        'detail': 'Author has registered books. '
+    assert response.json() == (
+        f'Author (ID [{author.id}]) has registered books. '
         'If you want continue, delete the authors books.'
-    }
+    )
 
 
 def test_delete_author_with_wrong_id(client, token):
