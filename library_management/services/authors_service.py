@@ -1,12 +1,15 @@
 from dataclasses import dataclass
 
-from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from library_management.depends.authors_dependencies import T_AuthorFilter
-from library_management.exceptions.authors_exceptions import AuthorNotFound
+from library_management.exceptions.authors_exceptions import (
+    AuthorHasRegisteredBooks,
+    AuthorNone,
+    AuthorNotFound,
+)
 from library_management.models.db_models import Author
 from library_management.schemas.authors_schemas import AuthorSchema
 
@@ -29,7 +32,7 @@ class AuthorService:
 
     async def create_author(self, author_schema: AuthorSchema) -> Author:
         if not author_schema.name:
-            raise HTTPException(status_code=422, detail='Author name cannot be None.')
+            raise AuthorNone()
 
         author = Author(name=author_schema.name)
         self.session.add(author)
@@ -47,10 +50,6 @@ class AuthorService:
             raise AuthorNotFound(author_id)
 
         if author.books:
-            raise HTTPException(
-                status_code=409,
-                detail='Author has registered books. If you want continue, '
-                'delete the authors books.',
-            )
+            raise AuthorHasRegisteredBooks(author.id)
 
         await self.session.delete(author)
