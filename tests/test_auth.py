@@ -50,7 +50,7 @@ def test_token_with_invalid_token(client):
     )
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.json() == {'detail': 'Credentials cannot be validateds.'}
+    assert response.json() == 'Credentials cannot be validateds.'
 
 
 def test_token_without_sub(client):
@@ -61,7 +61,7 @@ def test_token_without_sub(client):
     )
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.json() == {'detail': 'Credentials cannot be validateds.'}
+    assert response.json() == 'Credentials cannot be validateds.'
 
 
 def test_invalid_user(client):
@@ -72,4 +72,4 @@ def test_invalid_user(client):
     response = client.delete('/users/me', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.json() == {'detail': 'Credentials cannot be validateds.'}
+    assert response.json() == 'Credentials cannot be validateds.'

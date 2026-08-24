@@ -1,7 +1,8 @@
-from library_management.exceptions.auth_exceptions import IncorrectEmailOrPassword
 from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
+
+from library_management.exceptions.auth_exceptions import IncorrectEmailOrPassword
 
 handler = FastAPI()
 

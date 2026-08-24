@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from fastapi import Depends
-from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jwt import decode, encode
 from jwt.exceptions import DecodeError
@@ -10,6 +9,7 @@ from pwdlib import PasswordHash
 from sqlalchemy import select
 
 from library_management.depends.database_dependencies import Session
+from library_management.exceptions.security_exceptions import InvalidCredentials
 from library_management.models.db_models import UserDatabase
 from library_management.settings import Settings
 
@@ -48,25 +48,19 @@ async def get_current_user(
     def decode_bearer_token(jwt: dict):
         credentials = decode(jwt, settings.TOKEN_SECRET_KEY, settings.ALGORITHM)
         if not credentials.get('sub') or not credentials.get('exp'):
-            raise invalid_credentials
+            raise InvalidCredentials()
         return credentials
-
-    invalid_credentials = HTTPException(
-        status_code=401,
-        detail='Credentials cannot be validateds.',
-        headers={'WWW-Authenticate': 'Bearer'},
-    )
 
     try:
         payload = decode_bearer_token(access_token)
     except DecodeError:
-        raise invalid_credentials
+        raise InvalidCredentials()
 
     user = await session.scalar(
         select(UserDatabase).where(UserDatabase.email == payload.get('sub'))
     )
 
     if not user:
-        raise invalid_credentials
+        raise InvalidCredentials()
 
     return user
