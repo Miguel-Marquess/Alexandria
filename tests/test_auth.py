@@ -32,7 +32,7 @@ def test_token_with_wrong_password(client, user):
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == {'detail': 'Email or Password incorrect.'}
+    assert response.json() == 'Email or Password incorrect.'
 
 
 def test_token_with_wrong_email(client, user):
@@ -41,7 +41,7 @@ def test_token_with_wrong_email(client, user):
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == {'detail': 'Email or Password incorrect.'}
+    assert response.json() == 'Email or Password incorrect.'
 
 
 def test_token_with_invalid_token(client):

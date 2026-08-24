@@ -1,10 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 
 from library_management.database import get_session
+from library_management.exceptions.auth_exceptions import IncorrectEmailOrPassword
 from library_management.models.db_models import UserDatabase
 from library_management.schemas.auth_schemas import Token
 from library_management.security import create_access_token, verify_password
@@ -22,7 +23,7 @@ async def login(
     )
 
     if not user or not verify_password(form_data.password, user.password):
-        raise HTTPException(status_code=400, detail='Email or Password incorrect.')
+        raise IncorrectEmailOrPassword()
 
     token = create_access_token({'sub': user.email})
 
