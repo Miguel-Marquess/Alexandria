@@ -9,27 +9,31 @@ from library_management.exceptions.handlers import (
 )
 from library_management.routers import auth, authors, books, loans, users
 
+
+def registry_routers(app: FastAPI, routers: list) -> None:
+    for endpoint in routers:
+        app.include_router(endpoint.router)
+
+
+def registry_handlers(app: FastAPI, handlers: list) -> None:
+    for handler in handlers:
+        for exc, func in handler.items():
+            app.add_exception_handler(exc, func)
+
+
 app = FastAPI(title='Library System', version='0.1.0')
-app.include_router(users.router)
-app.include_router(auth.router)
-app.include_router(books.router)
-app.include_router(loans.router)
-app.include_router(authors.router)
 
-for exc, func_handler in books_handlers.book_exc_handlers.items():
-    app.add_exception_handler(exc, func_handler)
-
-for exc, func_handler in loans_handlers.loans_exc_handlers.items():
-    app.add_exception_handler(exc, func_handler)
-
-for exc, func_handler in authors_handlers.author_exc_handlers.items():
-    app.add_exception_handler(exc, func_handler)
-
-for exc, func_handler in auth_handlers.auth_exceptions_handelers.items():
-    app.add_exception_handler(exc, func_handler)
-
-for exc, func_handler in security_handlers.security_exc_handlers.items():
-    app.add_exception_handler(exc, func_handler)
+registry_routers(app, [auth, authors, books, loans, users])
+registry_handlers(
+    app,
+    [
+        auth_handlers.auth_exceptions_handelers,
+        authors_handlers.author_exc_handlers,
+        books_handlers.book_exc_handlers,
+        loans_handlers.loans_exc_handlers,
+        security_handlers.security_exc_handlers,
+    ],
+)
 
 
 @app.get('/')
