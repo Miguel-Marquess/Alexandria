@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from library_management.schemas.loans_schemas import LoanStatus
+from alexandria.schemas.loans_schemas import LoanStatus
 
 
 @pytest.mark.asyncio

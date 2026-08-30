@@ -3,7 +3,7 @@ from http import HTTPStatus
 import pytest
 from sqlalchemy import select
 
-from library_management.models.db_models import BookDatabase
+from alexandria.models.db_models import BookDatabase
 
 
 @pytest.mark.asyncio

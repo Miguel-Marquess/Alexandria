@@ -1,10 +1,10 @@
 from logging.config import fileConfig
 import asyncio
 from sqlalchemy.ext.asyncio import async_engine_from_config
-from library_management.models.db_models import registry_table
+from alexandria.models.db_models import registry_table
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-from library_management.settings import Settings
+from alexandria.settings import Settings
 from alembic import context
 
 # this is the Alembic Config object, which provides

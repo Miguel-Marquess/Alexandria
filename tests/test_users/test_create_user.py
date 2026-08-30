@@ -1,7 +1,7 @@
 from dataclasses import asdict
 from http import HTTPStatus
 
-from library_management.schemas.users_schemas import UserPublic
+from alexandria.schemas.users_schemas import UserPublic
 from tests.conftest import UserFactory
 
 

@@ -9,17 +9,17 @@ from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from testcontainers.postgres import PostgresContainer
 
-from library_management.app import app
-from library_management.database import get_session
-from library_management.models.db_models import (
+from alexandria.app import app
+from alexandria.database import get_session
+from alexandria.models.db_models import (
     Author,
     BookDatabase,
     LoanDatabase,
     UserDatabase,
     registry_table,
 )
-from library_management.schemas.loans_schemas import LoanPublic, LoanStatus
-from library_management.security import get_password_hash
+from alexandria.schemas.loans_schemas import LoanPublic, LoanStatus
+from alexandria.security import get_password_hash
 
 
 @pytest.fixture

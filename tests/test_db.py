@@ -3,7 +3,7 @@ from dataclasses import asdict
 import pytest
 from sqlalchemy import select
 
-from library_management.models.db_models import BookDatabase, UserDatabase
+from alexandria.models.db_models import BookDatabase, UserDatabase
 from tests.conftest import BookFactory, UserFactory
 
 

@@ -1,4 +1,4 @@
-from library_management.schemas.users_schemas import UserPublic
+from alexandria.schemas.users_schemas import UserPublic
 
 
 def test_get_me(client, token, user):

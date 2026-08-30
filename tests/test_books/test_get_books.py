@@ -3,8 +3,8 @@ from http import HTTPStatus
 import pytest
 from sqlalchemy import select
 
-from library_management.models.db_models import Author, BookDatabase
-from library_management.schemas.books_schemas import BookPublic
+from alexandria.models.db_models import Author, BookDatabase
+from alexandria.schemas.books_schemas import BookPublic
 
 
 def get_list_books(*book_db):

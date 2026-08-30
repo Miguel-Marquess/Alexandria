@@ -1,5 +1,5 @@
 [project]
-name = "library_management"
+name = "alexandria"
 version = "0.1.0"
 description = ""
 authors = [
@@ -51,7 +51,7 @@ quote-style = 'single'
 
 [tool.pytest]
 pythonpath = ['.']
-addopts = ['-p', 'no:warnings', '--cov=library_management', '--cov-context=test']
+addopts = ['-p', 'no:warnings', '--cov=alexandria', '--cov-context=test']
 
 [tool.typos.files]
 extend-exclude = ["*.md"] 
@@ -60,10 +60,10 @@ extend-exclude = ["*.md"]
 lint = 'ruff check'
 pre_format = 'ruff check --fix'
 format = 'ruff format'
-run = 'fastapi dev library_management/app.py'
-test = 'pytest -s -x -vv --cov=library_management --cov-report=term-missing --cov-report=html:coverage_html'
+run = 'fastapi dev alexandria/app.py'
+test = 'pytest -s -x -vv --cov=alexandria --cov-report=term-missing --cov-report=html:coverage_html'
 covarage = 'xdg-open coverage_html/index.html'
-debug = 'poetry run python -m debugpy --listen 0.0.0.0:5678 -m uvicorn library_management.app:app     --host 0.0.0.0 --port 8000 --reload'
+debug = 'poetry run python -m debugpy --listen 0.0.0.0:5678 -m uvicorn alexandria.app:app     --host 0.0.0.0 --port 8000 --reload'
 
 [tool.covarage.run]
 concurrency = ['thread', 'greenlet']
