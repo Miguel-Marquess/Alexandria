@@ -1,8 +1,8 @@
 import pytest
 from sqlalchemy import select
 
-from library_management.models.db_models import BookDatabase, LoanDatabase
-from library_management.services.loans_service import LoanService
+from alexandria.models.db_models import BookDatabase, LoanDatabase
+from alexandria.services.loans_service import LoanService
 
 
 @pytest.mark.asyncio

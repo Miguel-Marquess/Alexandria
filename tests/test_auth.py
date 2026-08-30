@@ -2,8 +2,8 @@ from http import HTTPStatus
 
 from jwt import decode
 
-from library_management.security import create_access_token
-from library_management.settings import Settings
+from alexandria.security import create_access_token
+from alexandria.settings import Settings
 from tests.conftest import UserFactory
 
 settings = Settings()

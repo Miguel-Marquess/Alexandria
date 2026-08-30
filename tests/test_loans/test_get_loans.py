@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from library_management.schemas.loans_schemas import LoanPublic, LoanStatus
+from alexandria.schemas.loans_schemas import LoanPublic, LoanStatus
 from tests.conftest import LoanFactory
 
 

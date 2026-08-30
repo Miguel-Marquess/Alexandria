@@ -4,8 +4,8 @@ from http import HTTPStatus
 import pytest
 from sqlalchemy import select
 
-from library_management.models.db_models import BookDatabase, LoanDatabase
-from library_management.schemas.loans_schemas import LoanPublic, LoanStatus
+from alexandria.models.db_models import BookDatabase, LoanDatabase
+from alexandria.schemas.loans_schemas import LoanPublic, LoanStatus
 from tests.conftest import BookFactory, LoanFactory
 
 
