@@ -3,9 +3,9 @@ from http import HTTPStatus
 import pytest
 from sqlalchemy import select
 
-from library_management.models.db_models import UserDatabase
-from library_management.schemas.users_schemas import UserPublic
-from library_management.security import verify_password
+from alexandria.models.db_models import UserDatabase
+from alexandria.schemas.users_schemas import UserPublic
+from alexandria.security import verify_password
 
 
 def test_update_user(client, user, token):

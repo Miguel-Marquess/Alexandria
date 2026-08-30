@@ -3,7 +3,7 @@ from http import HTTPStatus
 import pytest
 from sqlalchemy import select
 
-from library_management.models.db_models import Author
+from alexandria.models.db_models import Author
 
 
 def test_delete_author_who_contains_registered_books(client, token, book_db, author):
