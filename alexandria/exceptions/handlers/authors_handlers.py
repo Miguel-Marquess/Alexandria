@@ -11,19 +11,21 @@ handler = FastAPI()
 
 
 @handler.exception_handler(AuthorNotFound)
-async def author_not_found_handler(req: Request, exc: AuthorNotFound):
+async def author_not_found_handler(req: Request, exc: AuthorNotFound) -> JSONResponse:
     return JSONResponse(
         status_code=404, content=f'Author (ID [{exc.author_id}]) not found.'
     )
 
 
 @handler.exception_handler(AuthorNone)
-async def author_cannot_none(req: Request, exc: AuthorNone):
+async def author_cannot_none(req: Request, exc: AuthorNone) -> JSONResponse:
     return JSONResponse(status_code=422, content='Author name cannot be None.')
 
 
 @handler.exception_handler(AuthorHasRegisteredBooks)
-async def author_has_registed_books(req: Request, exc: AuthorHasRegisteredBooks):
+async def author_has_registed_books(
+    req: Request, exc: AuthorHasRegisteredBooks
+) -> JSONResponse:
     return JSONResponse(
         status_code=409,
         content=f'Author (ID [{exc.author_id}]) has registered books. '

@@ -1,7 +1,14 @@
 from http import HTTPStatus
+from typing import Any
+
+from fastapi.testclient import TestClient
+
+from alexandria.models.db_models import Author
 
 
-def test_insert_book(client, author, token, book):
+def test_insert_book(
+    client: TestClient, author: Author, token: str, book: dict[str, Any]
+) -> None:
     book.update({'author_id': author.id})
     response = client.post(
         '/books',
@@ -14,7 +21,9 @@ def test_insert_book(client, author, token, book):
     assert response.json() == book
 
 
-def test_insert_book_author_not_found(client, token, book):
+def test_insert_book_author_not_found(
+    client: TestClient, token: str, book: dict[str, Any]
+) -> None:
     book.update({'author_id': 0})
     response = client.post(
         '/books',

@@ -1,14 +1,20 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, Enum, ForeignKey, func
-from sqlalchemy.orm import Mapped, mapped_column, registry, relationship
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_as_dataclass,
+    mapped_column,
+    registry,
+    relationship,
+)
 
 from alexandria.schemas.loans_schemas import LoanStatus
 
 registry_table = registry()
 
 
-@registry_table.mapped_as_dataclass
+@mapped_as_dataclass(registry_table)
 class UserDatabase:
     __tablename__ = 'users'
 
@@ -30,7 +36,7 @@ class UserDatabase:
     )
 
 
-@registry_table.mapped_as_dataclass
+@mapped_as_dataclass(registry_table)
 class BookDatabase:
     __tablename__ = 'books'
 
@@ -48,13 +54,13 @@ class BookDatabase:
     )
 
 
-@registry_table.mapped_as_dataclass
+@mapped_as_dataclass(registry_table)
 class LoanDatabase:
     __tablename__ = 'loan'
 
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    book_id: Mapped[str] = mapped_column(ForeignKey('books.id'))
+    book_id: Mapped[int] = mapped_column(ForeignKey('books.id'))
     loan_date: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), init=False, server_default=func.now()
     )
@@ -73,7 +79,7 @@ class LoanDatabase:
     )
 
 
-@registry_table.mapped_as_dataclass
+@mapped_as_dataclass(registry_table)
 class Author:
     __tablename__ = 'authors'
 

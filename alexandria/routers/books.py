@@ -15,16 +15,27 @@ router = APIRouter(tags=['library'], prefix='/books')
 
 
 @router.post('/', status_code=201, response_model=BookPublic)
-async def insert_books(book: Book, session: Session, current_user: Current_user):
-    return await BookService(session).insert_book(book)
+async def insert_books(
+    book: Book, session: Session, current_user: Current_user
+) -> BookPublic:
+    book_model = await BookService(session).insert_book(book)
+    return BookPublic.model_validate(book_model)
 
 
 @router.get('/', status_code=200, response_model=BookList)
-async def read_books(filter: BookFilter, current_user: Current_user, session: Session):
-    return {'books': await BookService(session).read_books(filter)}
+async def read_books(
+    filter: BookFilter, current_user: Current_user, session: Session
+) -> BookList:
+    books = [
+        BookPublic.model_validate(book)
+        for book in await BookService(session).read_books(filter)
+    ]
+    return BookList(books=books)
 
 
 @router.delete('/{book_isbn}', status_code=200, response_model=Message)
-async def delete_book(book_isbn: str, user: Current_user, session: Session):
+async def delete_book(
+    book_isbn: str, user: Current_user, session: Session
+) -> dict[str, str]:
     await BookService(session).delete_book(book_isbn)
     return {'message': 'Book was deleted.'}

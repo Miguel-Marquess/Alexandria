@@ -18,7 +18,7 @@ from alexandria.exceptions.loans_exceptions import (
     MaxUserLoans,
 )
 from alexandria.models.db_models import BookDatabase, LoanDatabase, UserDatabase
-from alexandria.schemas.loans_schemas import LoanPublic, LoanStatus
+from alexandria.schemas.loans_schemas import LoanStatus
 from alexandria.settings import Settings
 
 settings = Settings()
@@ -28,14 +28,16 @@ settings = Settings()
 class LoanService:
     session: AsyncSession
 
-    async def get_book(self, book_isbn):
-        return await self.session.scalar(
-            select(BookDatabase)
-            .options(selectinload(BookDatabase.author))  # carrega o author tambem
-            .where(BookDatabase.isbn == book_isbn)
-        )
+    async def get_book(self, book_isbn: str) -> BookDatabase | None:
+        return (
+            await self.session.scalars(
+                select(BookDatabase)
+                .options(selectinload(BookDatabase.author))  # carrega o author tambem
+                .where(BookDatabase.isbn == book_isbn)
+            )
+        ).first()
 
-    async def create_loan(self, book_isbn: str, user: UserDatabase):
+    async def create_loan(self, book_isbn: str, user: UserDatabase) -> LoanDatabase:
         late_loans = (
             await self.session.scalars(
                 select(LoanDatabase).where(
@@ -49,8 +51,6 @@ class LoanService:
         if late_loans:
             raise LateLoans([loan.id for loan in late_loans])
 
-        book = await self.get_book(book_isbn)
-
         active_loans = await self.session.scalar(
             select(func.count())
             .select_from(LoanDatabase)
@@ -59,6 +59,12 @@ class LoanService:
                 LoanDatabase.status == LoanStatus.ACTIVE,
             )
         )
+
+        if active_loans is None:
+            raise RuntimeError('COUNT() returned a unexpected value [None]')
+
+        if active_loans >= settings.MAX_VALUE_LOANS:
+            raise MaxUserLoans()
 
         has_already_loan = await self.session.scalar(
             select(LoanDatabase)
@@ -74,14 +80,17 @@ class LoanService:
             raise HasAlreadyLoanWithBook(
                 has_already_loan.id, has_already_loan.book.isbn
             )
-        if not book:
+
+        book = await self.get_book(book_isbn)
+
+        if book is None:
             raise BookNotFound(book_isbn)
-        if active_loans >= settings.MAX_VALUE_LOANS:
-            raise MaxUserLoans()
+
         if book.availables <= 0:
             raise BookNotAvailable(book_isbn)
 
         book.availables -= 1
+
         loan = LoanDatabase(
             user_id=user.id,
             book_id=book.id,
@@ -96,9 +105,9 @@ class LoanService:
             raise
         await self.session.refresh(loan)
 
-        return LoanPublic.model_validate(loan)
+        return loan
 
-    async def return_loan(self, loan_id: int, user: UserDatabase):
+    async def return_loan(self, loan_id: int, user: UserDatabase) -> LoanDatabase:
         loan = await self.session.scalar(
             select(LoanDatabase).where(
                 LoanDatabase.id == loan_id, LoanDatabase.user_id == user.id
@@ -114,12 +123,14 @@ class LoanService:
         loan.returned_at = datetime.now(tz=ZoneInfo('UTC'))
         loan.status = LoanStatus.RETURNED
 
-        book = await self.session.scalar(
-            select(BookDatabase).where(BookDatabase.id == loan.book_id)
-        )
+        book = await self.get_book(book_isbn=loan.book.isbn)
+
+        if book is None:
+            raise BookNotFound(book_isbn=loan.book.isbn)
+
         book.availables += 1
 
         self.session.add_all([loan, book])
         await self.session.commit()
 
-        return LoanPublic.model_validate(loan)
+        return loan

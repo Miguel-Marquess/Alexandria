@@ -8,7 +8,9 @@ handler = FastAPI()
 
 
 @handler.exception_handler(IncorrectEmailOrPassword)
-async def email_or_password_incorrect(req: Request, exc: IncorrectEmailOrPassword):
+async def email_or_password_incorrect(
+    req: Request, exc: IncorrectEmailOrPassword
+) -> JSONResponse:
     return JSONResponse(status_code=400, content='Email or Password incorrect.')
 
 

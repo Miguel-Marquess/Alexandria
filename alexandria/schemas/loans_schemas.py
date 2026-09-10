@@ -25,8 +25,8 @@ class LoanPublic(BaseModel):
     returned_at: datetime | None = None
     status: LoanStatus
 
-    @computed_field  # permite property serializaveis
     @property  # trata metodo como atributo
+    @computed_field  # permite property serializaveis
     def is_overdue(self) -> bool:
         return self.status == LoanStatus.ACTIVE and self.due_date < datetime.now(
             tz=ZoneInfo('UTC')

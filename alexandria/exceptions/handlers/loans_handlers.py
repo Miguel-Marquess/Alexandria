@@ -13,7 +13,7 @@ handler = FastAPI()
 
 
 @handler.exception_handler(LateLoans)
-async def late_loans_handler(res: Request, exc: LateLoans):
+async def late_loans_handler(res: Request, exc: LateLoans) -> JSONResponse:
     return JSONResponse(
         status_code=409,
         content=(
@@ -23,7 +23,9 @@ async def late_loans_handler(res: Request, exc: LateLoans):
 
 
 @handler.exception_handler(HasAlreadyLoanWithBook)
-async def has_already_loan_with_book_handler(res: Request, exc: HasAlreadyLoanWithBook):
+async def has_already_loan_with_book_handler(
+    res: Request, exc: HasAlreadyLoanWithBook
+) -> JSONResponse:
     return JSONResponse(
         status_code=409,
         content=(
@@ -34,21 +36,23 @@ async def has_already_loan_with_book_handler(res: Request, exc: HasAlreadyLoanWi
 
 
 @handler.exception_handler(MaxUserLoans)
-async def max_user_loans_handler(res: Request, exc: MaxUserLoans):
+async def max_user_loans_handler(res: Request, exc: MaxUserLoans) -> JSONResponse:
     return JSONResponse(
         status_code=409, content='User has reached the maximum number of active loans.'
     )
 
 
 @handler.exception_handler(LoanNotFound)
-async def loan_not_found_handler(res: Request, exc: LoanNotFound):
+async def loan_not_found_handler(res: Request, exc: LoanNotFound) -> JSONResponse:
     return JSONResponse(
         status_code=404, content=f'Loan (ID [{exc.loan_id}]) not found.'
     )
 
 
 @handler.exception_handler(LoanAlreadyReturned)
-async def loan_has_already_returned_handler(res: Request, exc: LoanAlreadyReturned):
+async def loan_has_already_returned_handler(
+    res: Request, exc: LoanAlreadyReturned
+) -> JSONResponse:
     return JSONResponse(
         status_code=409, content=f'Loan (ID [{exc.loan_id}]) is already returned.'
     )

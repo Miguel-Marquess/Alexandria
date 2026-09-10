@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Any
 from zoneinfo import ZoneInfo
 
 from fastapi import Depends
@@ -19,15 +20,15 @@ pwd_context = PasswordHash.recommended()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/login')
 
 
-def get_password_hash(password: str):
+def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def verify_password(pure_password: str, hashed_password: str):
+def verify_password(pure_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(pure_password, hashed_password)
 
 
-def create_access_token(claims: dict):
+def create_access_token(claims: dict) -> str:
     to_encode = claims.copy()
 
     expire = datetime.now(tz=ZoneInfo('UTC')) + timedelta(
@@ -43,21 +44,21 @@ def create_access_token(claims: dict):
 
 async def get_current_user(
     session: Session, access_token: str = Depends(oauth2_scheme)
-):
+) -> UserDatabase:
 
-    def decode_bearer_token(jwt: dict):
-        credentials = decode(jwt, settings.TOKEN_SECRET_KEY, settings.ALGORITHM)
+    def decode_bearer_token(payload: str) -> dict[str, Any]:
+        credentials = decode(payload, settings.TOKEN_SECRET_KEY, settings.ALGORITHM)
         if not credentials.get('sub') or not credentials.get('exp'):
             raise InvalidCredentials()
         return credentials
 
     try:
-        payload = decode_bearer_token(access_token)
+        payload_decoded = decode_bearer_token(access_token)
     except DecodeError:
         raise InvalidCredentials()
 
     user = await session.scalar(
-        select(UserDatabase).where(UserDatabase.email == payload.get('sub'))
+        select(UserDatabase).where(UserDatabase.email == payload_decoded.get('sub'))
     )
 
     if not user:

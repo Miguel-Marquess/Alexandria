@@ -12,26 +12,30 @@ handler = FastAPI()
 
 
 @handler.exception_handler(BookNotFound)
-async def book_not_found_handler(req: Request, exc: BookNotFound):
+async def book_not_found_handler(req: Request, exc: BookNotFound) -> JSONResponse:
     return JSONResponse(
         status_code=404, content=f'Book (ISBN [{exc.book_isbn}]) not found. Verify.'
     )
 
 
 @handler.exception_handler(BookIdOrIsbnNotFound)
-async def book_id_or_isbn_not_found_handler(req: Request, exc: BookNotFound):
+async def book_id_or_isbn_not_found_handler(
+    req: Request, exc: BookNotFound
+) -> JSONResponse:
     return JSONResponse(status_code=404, content='Book ID or ISBN not found.')
 
 
 @handler.exception_handler(BookNotAvailable)
-async def book_not_available_handler(req: Request, exc: BookNotAvailable):
+async def book_not_available_handler(
+    req: Request, exc: BookNotAvailable
+) -> JSONResponse:
     return JSONResponse(
         status_code=409, content=f'Book (ISBN [{exc.book_isbn}]) is not available.'
     )
 
 
 @handler.exception_handler(BookInCurrentLoan)
-async def book_in_current_loan(req: Request, exc: BookInCurrentLoan):
+async def book_in_current_loan(req: Request, exc: BookInCurrentLoan) -> JSONResponse:
     return JSONResponse(
         status_code=409,
         content=f'Book (ISBN [{exc.book_isbn}]) '

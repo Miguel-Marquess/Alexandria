@@ -23,9 +23,8 @@ class UserService:
 
         return user
 
-    async def delete_user(self, current_user: UserDatabase) -> dict:
+    async def delete_user(self, current_user: UserDatabase) -> None:
         await self.session.delete(current_user)
-        return {'message': 'User was deleted.'}
 
     async def update_user(
         self, current_user: UserDatabase, user_update: UserUpdate

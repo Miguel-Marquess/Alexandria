@@ -8,7 +8,7 @@ handler = FastAPI()
 
 
 @handler.exception_handler(InvalidCredentials)
-async def invalid_credentials(req: Request, exc: InvalidCredentials):
+async def invalid_credentials(req: Request, exc: InvalidCredentials) -> JSONResponse:
     return JSONResponse(
         status_code=401,
         content='Credentials cannot be validateds.',

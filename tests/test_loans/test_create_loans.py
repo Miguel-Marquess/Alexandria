@@ -1,16 +1,25 @@
 from datetime import datetime
 from http import HTTPStatus
+from typing import cast
 
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from alexandria.models.db_models import BookDatabase, LoanDatabase
-from alexandria.schemas.loans_schemas import LoanPublic, LoanStatus
+from alexandria.models.db_models import BookDatabase, LoanDatabase, UserDatabase
+from alexandria.schemas.loans_schemas import LoanList, LoanPublic, LoanStatus
 from tests.conftest import BookFactory, LoanFactory
 
 
 @pytest.mark.asyncio
-async def test_create_loan(client, user, token, book_db, session):
+async def test_create_loan(
+    client: TestClient,
+    user: UserDatabase,
+    token: str,
+    book_db: BookDatabase,
+    session: AsyncSession,
+) -> None:
     response = client.post(
         f'/loans/{book_db.isbn}',
         headers={'Authorization': f'Bearer {token}'},
@@ -26,6 +35,8 @@ async def test_create_loan(client, user, token, book_db, session):
         )
     )
 
+    assert loan is not None
+
     loan_public = LoanPublic.model_validate(loan)
 
     assert response.status_code == HTTPStatus.CREATED
@@ -33,7 +44,9 @@ async def test_create_loan(client, user, token, book_db, session):
     assert book_db.quantity > book_db.availables
 
 
-def test_create_loan_has_already_loan(client, loan, token, book_db):
+def test_create_loan_has_already_loan(
+    client: TestClient, loan: LoanDatabase, token: str, book_db: BookDatabase
+) -> None:
     response = client.post(
         f'/loans/{book_db.isbn}', headers={'Authorization': f'Bearer {token}'}
     )
@@ -44,7 +57,7 @@ def test_create_loan_has_already_loan(client, loan, token, book_db):
     )
 
 
-def test_create_loan_book_not_exist(client, token):
+def test_create_loan_book_not_exist(client: TestClient, token: str) -> None:
     response = client.post(
         f'/loans/{1}',
         headers={'Authorization': f'Bearer {token}'},
@@ -54,7 +67,9 @@ def test_create_loan_book_not_exist(client, token):
     assert response.json() == 'Book (ISBN [1]) not found. Verify.'
 
 
-def test_create_loan_has_max_limit(client, token, book_db, three_loans):
+def test_create_loan_has_max_limit(
+    client: TestClient, token: str, book_db: BookDatabase, three_loans: LoanList
+) -> None:
     response = client.post(
         f'/loans/{book_db.isbn}',
         headers={'Authorization': f'Bearer {token}'},
@@ -65,7 +80,9 @@ def test_create_loan_has_max_limit(client, token, book_db, three_loans):
 
 
 @pytest.mark.asyncio
-async def test_create_loan_book_not_availables(client, session, token, book_db):
+async def test_create_loan_book_not_availables(
+    client: TestClient, session: AsyncSession, token: str, book_db: BookDatabase
+) -> None:
     book_db.availables = 0
     session.add(book_db)
     await session.commit()
@@ -80,14 +97,22 @@ async def test_create_loan_book_not_availables(client, session, token, book_db):
 
 @pytest.mark.asyncio
 async def test_create_loan_user_have_late_loans_in_database(
-    client, token, session, book_db, user
-):
+    client: TestClient,
+    token: str,
+    session: AsyncSession,
+    book_db: BookDatabase,
+    user: UserDatabase,
+) -> None:
     book = BookFactory()
-    loan = LoanFactory(
-        due_date=datetime(2026, 6, 11), book_id=book_db.id, user_id=user.id
+    loan = cast(
+        LoanDatabase,
+        LoanFactory(
+            due_date=datetime(2026, 6, 11), book_id=book_db.id, user_id=user.id
+        ),
     )
 
     session.add_all([loan, book])
+
     await session.commit()
     await session.refresh(loan)
 

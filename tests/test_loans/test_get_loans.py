@@ -1,21 +1,27 @@
 from datetime import datetime
 from http import HTTPStatus
+from typing import cast
 from zoneinfo import ZoneInfo
 
 import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from alexandria.schemas.loans_schemas import LoanPublic, LoanStatus
+from alexandria.models.db_models import BookDatabase, LoanDatabase, UserDatabase
+from alexandria.schemas.loans_schemas import LoanList, LoanStatus
 from tests.conftest import LoanFactory
 
 
-def test_my_loans(three_loans_json, client, token):
+def test_my_loans(three_loans: LoanList, client: TestClient, token: str) -> None:
     response = client.get('/loans', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'loans': three_loans_json}
+    assert response.json() == three_loans.model_dump(mode='json')
 
 
-def test_get_loans_active(client, three_loans_json, token):
+def test_get_loans_active(
+    client: TestClient, three_loans: LoanList, token: str
+) -> None:
     response = client.get(
         '/loans',
         headers={'Authorization': f'Bearer {token}'},
@@ -23,16 +29,25 @@ def test_get_loans_active(client, three_loans_json, token):
     )
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'loans': three_loans_json}
+    assert response.json() == three_loans.model_dump(mode='json')
 
 
 @pytest.mark.asyncio
-async def test_get_loans_returned(client, token, session, user, book_db):
-    loan = LoanFactory(
-        status=LoanStatus.RETURNED,
-        returned_at=datetime.now(tz=ZoneInfo('UTC')),
-        user_id=user.id,
-        book_id=book_db.id,
+async def test_get_loans_returned(
+    client: TestClient,
+    token: str,
+    session: AsyncSession,
+    user: UserDatabase,
+    book_db: BookDatabase,
+) -> None:
+    loan = cast(
+        LoanDatabase,
+        LoanFactory(
+            status=LoanStatus.RETURNED,
+            returned_at=datetime.now(tz=ZoneInfo('UTC')),
+            user_id=user.id,
+            book_id=book_db.id,
+        ),
     )
 
     session.add(loan)
@@ -45,17 +60,25 @@ async def test_get_loans_returned(client, token, session, user, book_db):
     )
 
     assert response.json()['loans'][0]['status'] == 'returned'
-    assert response.json() == ({
-        'loans': [LoanPublic.model_validate(loan).model_dump(mode='json')]
-    })
+    assert response.json() == LoanList(loans=[loan]).model_dump(mode='json')
 
 
 @pytest.mark.asyncio
-async def test_get_not_overdue_loan(client, token, book_db, user, session, loan):
-    loan_database = LoanFactory(
-        due_date=datetime(2026, 6, 11, tzinfo=ZoneInfo('UTC')),
-        book_id=book_db.id,
-        user_id=user.id,
+async def test_get_not_overdue_loan(
+    client: TestClient,
+    token: str,
+    book_db: BookDatabase,
+    user: UserDatabase,
+    session: AsyncSession,
+    loan: LoanDatabase,
+) -> None:
+    loan_database = cast(
+        LoanDatabase,
+        LoanFactory(
+            due_date=datetime(2026, 6, 11, tzinfo=ZoneInfo('UTC')),
+            book_id=book_db.id,
+            user_id=user.id,
+        ),
     )
     session.add(loan_database)
     await session.commit()
@@ -67,17 +90,25 @@ async def test_get_not_overdue_loan(client, token, book_db, user, session, loan)
     )
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        'loans': [LoanPublic.model_validate(loan).model_dump(mode='json')]
-    }
+    assert response.json() == LoanList(loans=[loan]).model_dump(mode='json')
 
 
 @pytest.mark.asyncio
-async def test_get_true_overdue_loan(client, token, book_db, user, session, loan):
-    loan_database = LoanFactory(
-        due_date=datetime(2026, 6, 11, tzinfo=ZoneInfo('UTC')),
-        book_id=book_db.id,
-        user_id=user.id,
+async def test_get_true_overdue_loan(
+    client: TestClient,
+    token: str,
+    book_db: BookDatabase,
+    user: UserDatabase,
+    session: AsyncSession,
+    loan: LoanDatabase,
+) -> None:
+    loan_database = cast(
+        LoanDatabase,
+        LoanFactory(
+            due_date=datetime(2026, 6, 11, tzinfo=ZoneInfo('UTC')),
+            book_id=book_db.id,
+            user_id=user.id,
+        ),
     )
     session.add(loan_database)
     await session.commit()
@@ -89,18 +120,26 @@ async def test_get_true_overdue_loan(client, token, book_db, user, session, loan
     )
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        'loans': [LoanPublic.model_validate(loan_database).model_dump(mode='json')]
-    }
+    assert response.json() == LoanList(loans=[loan_database]).model_dump(mode='json')
 
 
 @pytest.mark.asyncio
-async def test_get_book_id_loan(client, token, book_db, user, session, loan):
-    loan_database = LoanFactory(
-        book_id=book_db.id,
-        user_id=user.id,
-        status=LoanStatus.RETURNED,
-        returned_at=datetime.now(tz=ZoneInfo('UTC')),
+async def test_get_book_id_loan(
+    client: TestClient,
+    token: str,
+    book_db: BookDatabase,
+    user: UserDatabase,
+    session: AsyncSession,
+    loan: LoanDatabase,
+) -> None:
+    loan_database = cast(
+        LoanDatabase,
+        LoanFactory(
+            book_id=book_db.id,
+            user_id=user.id,
+            status=LoanStatus.RETURNED,
+            returned_at=datetime.now(tz=ZoneInfo('UTC')),
+        ),
     )
     session.add(loan_database)
     await session.commit()
@@ -111,11 +150,7 @@ async def test_get_book_id_loan(client, token, book_db, user, session, loan):
         params={'book_id': book_db.id},
     )
 
-    loans = [loan, loan_database]
-
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        'loans': [
-            LoanPublic.model_validate(loan).model_dump(mode='json') for loan in loans
-        ]
-    }
+    assert response.json() == LoanList(loans=[loan, loan_database]).model_dump(
+        mode='json'
+    )

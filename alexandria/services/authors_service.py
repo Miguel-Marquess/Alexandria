@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,7 +19,7 @@ from alexandria.schemas.authors_schemas import AuthorSchema
 class AuthorService:
     session: AsyncSession
 
-    async def read_authors(self, filter: T_AuthorFilter) -> list[Author]:
+    async def read_authors(self, filter: T_AuthorFilter) -> Sequence[Author | None]:
         query = select(Author)
         author_name = filter.name
 
@@ -28,7 +29,7 @@ class AuthorService:
         if filter.order:
             query = query.order_by(Author.name)
 
-        return await self.session.scalars(query)
+        return (await self.session.scalars(query)).all()
 
     async def create_author(self, author_schema: AuthorSchema) -> Author:
         if not author_schema.name:

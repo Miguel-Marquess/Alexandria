@@ -1,3 +1,5 @@
+# mypy: ignore-errors
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
