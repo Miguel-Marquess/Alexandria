@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -35,7 +36,7 @@ class BookService:
 
         return db_book
 
-    async def read_books(self, filter: FilterBook) -> list[BookDatabase] | list[None]:
+    async def read_books(self, filter: FilterBook) -> Sequence[BookDatabase | None]:
         query = select(BookDatabase)
         if filter.isbn or filter.book_id:
             # abstracao necessaria? nao saberemos
@@ -81,9 +82,9 @@ class BookService:
                 query = query.join(Author)
             query = query.order_by(order[filter.order_by])
 
-        result = await self.session.scalars(
-            query.offset(filter.start).limit(filter.ends)
-        )
+        result = (
+            await self.session.scalars(query.offset(filter.start).limit(filter.ends))
+        ).all()
 
         return result
 

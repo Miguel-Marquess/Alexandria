@@ -21,7 +21,7 @@ class BookPublic(Book):
 
 
 class BookList(BaseModel):
-    books: list[BookPublic]
+    books: list[BookPublic | None]
 
 
 class BookOrder(Enum):

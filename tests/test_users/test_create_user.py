@@ -1,12 +1,16 @@
 from dataclasses import asdict
 from http import HTTPStatus
+from typing import cast
 
+from fastapi.testclient import TestClient
+
+from alexandria.models.db_models import UserDatabase
 from alexandria.schemas.users_schemas import UserPublic
 from tests.conftest import UserFactory
 
 
-def test_create_user(client):
-    user = UserFactory()
+def test_create_user(client: TestClient) -> None:
+    user = cast(UserDatabase, UserFactory())
     response = client.post('/users', json=asdict(user))
 
     user.id = 1

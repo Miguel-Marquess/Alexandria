@@ -1,7 +1,9 @@
 from http import HTTPStatus
 
+from fastapi.testclient import TestClient
 
-def test_delete_user(client, token):
+
+def test_delete_user(client: TestClient, token: str) -> None:
     response = client.delete('/users/me', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == HTTPStatus.OK

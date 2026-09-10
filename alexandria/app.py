@@ -37,5 +37,5 @@ registry_handlers(
 
 
 @app.get('/')
-def welcome():
+def welcome() -> dict[str, str]:
     return {'message': 'Welcome to my Library Management!'}

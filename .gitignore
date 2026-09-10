@@ -1,6 +1,9 @@
 ## Python
 
 poetry run python -m debugpy --listen 0.0.0.0:5678 -m uvicorn library_management.app:app     --host 0.0.0.0 --port 8000 --reload
+.vscode
+coverage_html
+mypy-report
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -9,7 +12,6 @@ __pycache__/
 
 # C extensions
 *.so
-
 # Distribution / packaging
 .Python
 build/

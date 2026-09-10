@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class AuthorSchema(BaseModel):
-    name: str | None = None
+    name: str
 
 
 class AuthorPublic(AuthorSchema):
@@ -15,5 +15,6 @@ class AuthorsList(BaseModel):
     authors: list[AuthorPublic]
 
 
-class AuthorFilter(AuthorSchema):
+class AuthorFilter(BaseModel):
+    name: str | None = None
     order: bool | None = None

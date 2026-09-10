@@ -15,17 +15,21 @@ router = APIRouter(tags=['Loans'], prefix='/loans')
 
 
 @router.post('/{book_isbn}', status_code=201, response_model=LoanPublic)
-async def make_loan(book_isbn: str, user: Current_user, session: Session):
-    return await LoanService(session).create_loan(book_isbn=book_isbn, user=user)
+async def make_loan(book_isbn: str, user: Current_user, session: Session) -> LoanPublic:
+    loan = await LoanService(session).create_loan(book_isbn=book_isbn, user=user)
+    return LoanPublic.model_validate(loan)
 
 
 @router.patch('/{loan_id}/return', status_code=200, response_model=LoanPublic)
-async def devolution(loan_id: int, user: Current_user, session: Session):
-    return await LoanService(session).return_loan(loan_id, user)
+async def devolution(loan_id: int, user: Current_user, session: Session) -> LoanPublic:
+    loan = await LoanService(session=session).return_loan(loan_id=loan_id, user=user)
+    return LoanPublic.model_validate(loan)
 
 
 @router.get('/', status_code=200, response_model=LoanList)
-async def my_loans(user: Current_user, session: Session, filter: FilterLoan):
+async def my_loans(
+    user: Current_user, session: Session, filter: FilterLoan
+) -> LoanList:
     query = select(LoanDatabase).where(LoanDatabase.user_id == user.id)
     # colocar verificacao se o usuario e admin ou nao, se sim,
     # podera puxar todos os loans
@@ -43,4 +47,4 @@ async def my_loans(user: Current_user, session: Session, filter: FilterLoan):
 
     loans = await session.scalars(query.offset(filter.start).limit(filter.ends))
 
-    return {'loans': loans}
+    return LoanList(loans=loans)

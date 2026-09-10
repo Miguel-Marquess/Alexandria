@@ -1,12 +1,14 @@
-from contextlib import contextmanager
+from collections.abc import Callable, Generator
+from contextlib import AbstractContextManager, contextmanager
 from datetime import datetime, timedelta
+from typing import Any, AsyncGenerator, cast
 
 import factory
 import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
 from sqlalchemy import event
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from testcontainers.postgres import PostgresContainer
 
 from alexandria.app import app
@@ -18,13 +20,15 @@ from alexandria.models.db_models import (
     UserDatabase,
     registry_table,
 )
-from alexandria.schemas.loans_schemas import LoanPublic, LoanStatus
+from alexandria.schemas.authors_schemas import AuthorsList
+from alexandria.schemas.books_schemas import BookList, BookPublic
+from alexandria.schemas.loans_schemas import LoanList, LoanStatus
 from alexandria.security import get_password_hash
 
 
 @pytest.fixture
-def client(session):
-    async def get_session_override():
+def client(session: AsyncSession) -> Generator[TestClient]:
+    async def get_session_override() -> AsyncGenerator[AsyncSession]:
         yield session
 
     with TestClient(app) as client:
@@ -34,13 +38,15 @@ def client(session):
 
 
 @pytest.fixture(scope='session')
-def engine():
+# o escopo de session usa o mesmo valor para toda a bateria de testes
+# sem o escopo, por padrao, usa o mesmo valor por teste, no proximo muda.
+def engine() -> Generator[AsyncEngine]:
     with PostgresContainer('postgres:17', driver='psycopg') as postgres:
         yield create_async_engine(postgres.get_connection_url())
 
 
 @pytest_asyncio.fixture
-async def session(engine):
+async def session(engine: AsyncEngine) -> AsyncGenerator[AsyncSession]:
     async with engine.begin() as conn:
         await conn.run_sync(registry_table.metadata.create_all)
 
@@ -51,31 +57,19 @@ async def session(engine):
         await conn.run_sync(registry_table.metadata.drop_all)
 
 
-@pytest_asyncio.fixture
-async def user(session):
-    password = 'testpassword'
+@pytest.fixture
+def clean_password() -> str:
+    return 'testpassword'
 
-    user = UserFactory(password=get_password_hash(password))
+
+@pytest_asyncio.fixture
+async def user(session: AsyncSession, clean_password: str) -> UserDatabase:
+
+    user = cast(UserDatabase, UserFactory(password=get_password_hash(clean_password)))
 
     session.add(user)
     await session.commit()
     await session.refresh(user)
-
-    user.clean_password = password
-    # cria um atributo temporario no ORM
-    return user
-
-
-@pytest_asyncio.fixture
-async def other_user(session):
-    password = 'testpassword'
-
-    user = UserFactory(password=get_password_hash(password))
-    session.add(user)
-    await session.commit()
-    await session.refresh(user)
-
-    user.clean_password = password
 
     return user
 
@@ -90,8 +84,10 @@ class UserFactory(factory.Factory):
 
 
 @contextmanager
-def _mock_db_time(model, time=datetime(2026, 6, 11)):
-    def fake_hook_time(mapper, connection, target):
+def _mock_db_time(
+    model: Any, time: datetime = datetime(2026, 6, 11)
+) -> Generator[datetime]:
+    def fake_hook_time(mapper: Any, connection: AsyncSession, target: Any) -> None:
         if hasattr(target, 'created_at'):
             target.created_at = time
 
@@ -104,22 +100,24 @@ def _mock_db_time(model, time=datetime(2026, 6, 11)):
 
 
 @pytest.fixture
-def mock_db_time():
+def mock_db_time() -> Callable[[Any], AbstractContextManager[datetime]]:
     return _mock_db_time
 
 
 @pytest.fixture
-def token(client, user):
+def token(client: TestClient, user: UserDatabase, clean_password: str) -> Any:
     response = client.post(
-        'auth/login', data={'username': user.email, 'password': user.clean_password}
+        'auth/login', data={'username': user.email, 'password': clean_password}
     )
 
-    return response.json()['access_token']
+    payload = response.json()['access_token']
+
+    return payload
 
 
 @pytest_asyncio.fixture
-async def author(session):
-    author = AuthorFactory()
+async def author(session: AsyncSession) -> Author:
+    author = cast(Author, AuthorFactory())
 
     session.add(author)
     await session.commit()
@@ -134,16 +132,15 @@ class AuthorFactory(factory.Factory):
 
 
 @pytest_asyncio.fixture
-async def book_db(author, session):
-    book = BookFactory(author=author)
+async def book_db(author: Author, session: AsyncSession) -> BookDatabase:
+    book = cast(BookDatabase, BookFactory(author=author))
     session.add(book)
     await session.commit()
     await session.refresh(book)
 
     return book
 
-
-def to_serialize(book):
+def to_serialize(book: BookDatabase) -> dict[str, Any]:
     return {
         'title': book.title,
         'author_id': book.author.id,
@@ -155,21 +152,20 @@ def to_serialize(book):
         'id': book.id,
     }
 
-
 @pytest.fixture
-def book():
+def book(author: Author) -> dict[str, Any]:
     book = BookFactory()
     return to_serialize(book)
 
 
 @pytest_asyncio.fixture
-async def many_books(author, session):
+async def many_books(author: Author, session: AsyncSession) -> BookList:
     books = BookFactory.create_batch(5, author=author)
     session.add_all(books)
     await session.commit()
     for book in books:
         await session.refresh(book)
-    return [to_serialize(book) for book in books]
+    return BookList(books=books)
 
 
 class BookFactory(factory.Factory):
@@ -198,8 +194,10 @@ class LoanFactory(factory.Factory):
 
 
 @pytest_asyncio.fixture
-async def loan(session, user, book_db):
-    loan_database = LoanFactory(user_id=user.id, book_id=book_db.id)
+async def loan(
+    session: AsyncSession, user: UserDatabase, book_db: BookDatabase
+) -> LoanDatabase:
+    loan_database = cast(LoanDatabase, LoanFactory(user_id=user.id, book_id=book_db.id))
     book_db.availables -= 1
     session.add_all([loan_database, book_db])
     await session.commit()
@@ -209,7 +207,7 @@ async def loan(session, user, book_db):
 
 
 @pytest_asyncio.fixture
-async def three_loans(session, user):
+async def three_loans(session: AsyncSession, user: UserDatabase) -> LoanList:
     books = BookFactory.create_batch(3, availables=4)
     session.add_all(books)
     await session.commit()
@@ -221,28 +219,13 @@ async def three_loans(session, user):
     for loan in loans:
         await session.refresh(loan)
 
-    return loans
-
-
-def serialize_author(author):
-    return {'id': author.id, 'name': author.name}
+    return LoanList(loans=loans)
 
 
 @pytest_asyncio.fixture
-async def many_authors(session):
+async def many_authors(session: AsyncSession) -> AuthorsList:
     authors = AuthorFactory.create_batch(5)
     session.add_all(authors)
     await session.commit()
 
-    return {
-        'authors': [
-            serialize_author(to_serialize_author) for to_serialize_author in authors
-        ]
-    }
-
-
-@pytest.fixture
-def three_loans_json(three_loans):
-    return [
-        LoanPublic.model_validate(loan).model_dump(mode='json') for loan in three_loans
-    ]
+    return AuthorsList(authors=authors)
