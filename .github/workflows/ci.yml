@@ -34,6 +34,9 @@ jobs:
       - name: Run ruff format
         run: poetry run task format
       
+      - name: Run mypy
+        run: poetry run task hints
+      
       - name: Run tests
         env:
           MAX_VALUE_LOANS: ${{ secrets.MAX_VALUE_LOANS }}

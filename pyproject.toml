@@ -78,10 +78,12 @@ extend-exclude = ["*.md"]
 lint = 'ruff check'
 pre_format = 'ruff check --fix'
 format = 'ruff format'
+hints = 'mypy . '
 run = 'fastapi dev alexandria/app.py'
 test = 'pytest -s -x -vv --cov=alexandria --cov-report=term-missing --cov-report=html:coverage_html'
 covarage = 'xdg-open coverage_html/index.html'
 debug = 'poetry run python -m debugpy --listen 0.0.0.0:5678 -m uvicorn alexandria.app:app     --host 0.0.0.0 --port 8000 --reload'
+
 
 [tool.covarage.run]
 concurrency = ['thread', 'greenlet']
