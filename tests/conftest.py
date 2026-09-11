@@ -154,7 +154,7 @@ def to_serialize(book: BookDatabase) -> dict[str, Any]:
 
 @pytest.fixture
 def book(author: Author) -> dict[str, Any]:
-    book = BookFactory()
+    book = cast(BookDatabase, BookFactory())
     return to_serialize(book)
 
 
