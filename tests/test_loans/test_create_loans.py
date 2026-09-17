@@ -21,7 +21,7 @@ async def test_create_loan(
     session: AsyncSession,
 ) -> None:
     response = client.post(
-        f'/loans/{book_db.isbn}',
+        f'/api/v1/loans/{book_db.isbn}',
         headers={'Authorization': f'Bearer {token}'},
     )
 
@@ -48,7 +48,7 @@ def test_create_loan_has_already_loan(
     client: TestClient, loan: LoanDatabase, token: str, book_db: BookDatabase
 ) -> None:
     response = client.post(
-        f'/loans/{book_db.isbn}', headers={'Authorization': f'Bearer {token}'}
+        f'/api/v1/loans/{book_db.isbn}', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
@@ -59,7 +59,7 @@ def test_create_loan_has_already_loan(
 
 def test_create_loan_book_not_exist(client: TestClient, token: str) -> None:
     response = client.post(
-        f'/loans/{1}',
+        f'/api/v1/loans/{1}',
         headers={'Authorization': f'Bearer {token}'},
     )
 
@@ -71,7 +71,7 @@ def test_create_loan_has_max_limit(
     client: TestClient, token: str, book_db: BookDatabase, three_loans: LoanList
 ) -> None:
     response = client.post(
-        f'/loans/{book_db.isbn}',
+        f'/api/v1/loans/{book_db.isbn}',
         headers={'Authorization': f'Bearer {token}'},
     )
 
@@ -88,7 +88,7 @@ async def test_create_loan_book_not_availables(
     await session.commit()
 
     response = client.post(
-        f'/loans/{book_db.isbn}', headers={'Authorization': f'Bearer {token}'}
+        f'/api/v1/loans/{book_db.isbn}', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
@@ -117,7 +117,7 @@ async def test_create_loan_user_have_late_loans_in_database(
     await session.refresh(loan)
 
     response = client.post(
-        f'/loans/{book.isbn}', headers={'Authorization': f'Bearer {token}'}
+        f'/api/v1/loans/{book.isbn}', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.CONFLICT

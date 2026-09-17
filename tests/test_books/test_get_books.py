@@ -18,7 +18,7 @@ def test_get_book_by_isbn(
     client: TestClient, book_db: BookDatabase, token: str
 ) -> None:
     response = client.get(
-        '/books',
+        '/api/v1/books',
         headers={'Authorization': f'Bearer {token}'},
         params={'isbn': book_db.isbn},
     )
@@ -28,7 +28,7 @@ def test_get_book_by_isbn(
 
 def test_invalid_isbn(client: TestClient, token: str) -> None:
     response = client.get(
-        '/books',
+        '/api/v1/books',
         headers={'Authorization': f'Bearer {token}'},
         params={'isbn': 'invalid'},
     )
@@ -41,7 +41,7 @@ def test_get_book_by_title(
     client: TestClient, book_db: BookDatabase, token: str
 ) -> None:
     response = client.get(
-        '/books',
+        '/api/v1/books',
         headers={'Authorization': f'Bearer {token}'},
         params={'title': book_db.title[:4]},
     )
@@ -54,7 +54,7 @@ def test_get_5_books_by_author_id(
     client: TestClient, token: str, author: Author, many_books: BookList
 ) -> None:
     response = client.get(
-        '/books',
+        '/api/v1/books',
         headers={'Authorization': f'Bearer {token}'},
         params={'author_id': author.id},
     )
@@ -67,7 +67,7 @@ def test_get_books_whos_contains_a(
     client: TestClient, token: str, many_books: BookList
 ) -> None:
     response = client.get(
-        '/books',
+        '/api/v1/books',
         headers={'Authorization': f'Bearer {token}'},
         params={'title': 'a'},
     )
@@ -80,7 +80,7 @@ def test_get_books_whos_contains_a(
 
 
 def test_get_5_books(client: TestClient, token: str, many_books: BookList) -> None:
-    response = client.get('/books', headers={'Authorization': f'Bearer {token}'})
+    response = client.get('/api/v1/books', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == many_books.model_dump(mode='json')
@@ -97,7 +97,7 @@ async def test_get_book_order_by_year(
     assert db_books is not None
 
     response = client.get(
-        '/books',
+        '/api/v1/books',
         headers={'Authorization': f'Bearer {token}'},
         params={'order_by': 'year'},
     )
@@ -117,7 +117,7 @@ async def test_get_book_order_by_author_name_without_name_author(
     assert db_books is not None
 
     response = client.get(
-        '/books',
+        '/api/v1/books',
         headers={'Authorization': f'Bearer {token}'},
         params={'order_by': 'author_name'},
     )
@@ -137,7 +137,7 @@ async def test_get_book_order_by_title(
     assert db_books is not None
 
     response = client.get(
-        '/books',
+        '/api/v1/books',
         headers={'Authorization': f'Bearer {token}'},
         params={'order_by': 'year'},
     )
@@ -150,7 +150,7 @@ def test_get_book_by_author_name(
     client: TestClient, book_db: BookDatabase, token: str
 ) -> None:
     response = client.get(
-        '/books',
+        '/api/v1/books',
         headers={'Authorization': f'Bearer {token}'},
         params={'author_name': book_db.author.name},
     )

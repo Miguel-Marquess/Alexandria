@@ -11,7 +11,7 @@ from tests.conftest import UserFactory
 
 def test_create_user(client: TestClient) -> None:
     user = cast(UserDatabase, UserFactory())
-    response = client.post('/users', json=asdict(user))
+    response = client.post('/api/v1/users', json=asdict(user))
 
     user.id = 1
 
@@ -21,7 +21,8 @@ def test_create_user(client: TestClient) -> None:
 
 def test_email_already_exist(client: TestClient, user: UserDatabase) -> None:
     response = client.post(
-        'users', json={'username': 'test', 'email': user.email, 'password': 'test'}
+        '/api/v1/users',
+        json={'username': 'test', 'email': user.email, 'password': 'test'},
     )
 
     assert response.status_code == HTTPStatus.CONFLICT

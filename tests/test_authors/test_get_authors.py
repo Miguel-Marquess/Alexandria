@@ -20,7 +20,7 @@ def test_get_all_authors(
 ) -> None:
 
     response = client.get(
-        '/authors',
+        '/api/v1/authors',
         headers={'Authorization': f'Bearer {token}'},
     )
 
@@ -33,7 +33,7 @@ def test_get_all_authors_with_name_contains_c(
 ) -> None:
     authors = [author for author in many_authors.authors if 'c' in author.name]
     response = client.get(
-        '/authors',
+        '/api/v1/authors',
         headers={'Authorization': f'Bearer {token}'},
         params={'name': 'c'},
     )
@@ -48,7 +48,7 @@ async def test_get_all_authors_order(
 ) -> None:
     authors = (await session.scalars(select(Author).order_by(Author.name))).all()
     response = client.get(
-        '/authors',
+        '/api/v1/authors',
         headers={'Authorization': f'Bearer {token}'},
         params={'order': True},
     )

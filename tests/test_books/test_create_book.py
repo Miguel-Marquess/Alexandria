@@ -11,7 +11,7 @@ def test_insert_book(
 ) -> None:
     book.update({'author_id': author.id})
     response = client.post(
-        '/books',
+        '/api/v1/books',
         headers={'Authorization': f'Bearer {token}'},
         json=book,
     )
@@ -26,7 +26,7 @@ def test_insert_book_author_not_found(
 ) -> None:
     book.update({'author_id': 0})
     response = client.post(
-        '/books',
+        '/api/v1/books',
         headers={'Authorization': f'Bearer {token}'},
         json=book,
     )

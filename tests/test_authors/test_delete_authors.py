@@ -12,7 +12,7 @@ def test_delete_author_who_contains_registered_books(
     client: TestClient, token: str, book_db: BookDatabase, author: Author
 ) -> None:
     response = client.delete(
-        f'/authors/{author.id}', headers={'Authorization': f'Bearer {token}'}
+        f'/api/v1/authors/{author.id}', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
@@ -24,7 +24,7 @@ def test_delete_author_who_contains_registered_books(
 
 def test_delete_author_with_wrong_id(client: TestClient, token: str) -> None:
     response = client.delete(
-        '/authors/-1', headers={'Authorization': f'Bearer {token}'}
+        '/api/v1/authors/-1', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
@@ -37,7 +37,7 @@ async def test_delete_author(
 ) -> None:
 
     response = client.delete(
-        f'/authors/{author.id}', headers={'Authorization': f'Bearer {token}'}
+        f'/api/v1/authors/{author.id}', headers={'Authorization': f'Bearer {token}'}
     )
 
     db_author = await session.scalar(select(Author).where(Author.id == author.id))

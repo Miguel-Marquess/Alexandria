@@ -107,7 +107,7 @@ def mock_db_time() -> Callable[[Any], AbstractContextManager[datetime]]:
 @pytest.fixture
 def token(client: TestClient, user: UserDatabase, clean_password: str) -> Any:
     response = client.post(
-        'auth/login', data={'username': user.email, 'password': clean_password}
+        '/api/v1/auth/login', data={'username': user.email, 'password': clean_password}
     )
 
     payload = response.json()['access_token']

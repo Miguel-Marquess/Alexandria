@@ -13,7 +13,7 @@ async def test_delete_book(
     client: TestClient, token: str, session: AsyncSession, book_db: BookDatabase
 ) -> None:
     response = client.delete(
-        f'/books/{book_db.isbn}', headers={'Authorization': f'Bearer {token}'}
+        f'/api/v1/books/{book_db.isbn}', headers={'Authorization': f'Bearer {token}'}
     )
 
     book = await session.scalar(
@@ -30,7 +30,7 @@ def test_dont_delete_book_with_active_loan(
     client: TestClient, token: str, book_db: BookDatabase, loan: LoanDatabase
 ) -> None:
     response = client.delete(
-        f'/books/{book_db.isbn}', headers={'Authorization': f'Bearer {token}'}
+        f'/api/v1/books/{book_db.isbn}', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
@@ -40,7 +40,9 @@ def test_dont_delete_book_with_active_loan(
 
 
 def test_delete_book_not_found(client: TestClient, token: str) -> None:
-    response = client.delete('/books/-1', headers={'Authorization': f'Bearer {token}'})
+    response = client.delete(
+        '/api/v1/books/-1', headers={'Authorization': f'Bearer {token}'}
+    )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == 'Book (ISBN [-1]) not found. Verify.'

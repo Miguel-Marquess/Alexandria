@@ -11,7 +11,7 @@ from alexandria.schemas.books_schemas import (
 from alexandria.schemas.core_schemas import Message
 from alexandria.services.books_service import BookService
 
-router = APIRouter(tags=['library'], prefix='/books')
+router = APIRouter(tags=['library'], prefix='/api/v1/books')
 
 
 @router.post('/', status_code=201, response_model=BookPublic)
