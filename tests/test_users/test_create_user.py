@@ -17,3 +17,12 @@ def test_create_user(client: TestClient) -> None:
 
     assert response.status_code == HTTPStatus.CREATED
     assert response.json() == UserPublic.model_validate(user).model_dump()
+
+
+def test_email_already_exist(client: TestClient, user: UserDatabase) -> None:
+    response = client.post(
+        'users', json={'username': 'test', 'email': user.email, 'password': 'test'}
+    )
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {'detail': 'This Email already exist.'}

@@ -21,7 +21,7 @@ from alexandria.models.db_models import (
     registry_table,
 )
 from alexandria.schemas.authors_schemas import AuthorsList
-from alexandria.schemas.books_schemas import BookList, BookPublic
+from alexandria.schemas.books_schemas import BookList
 from alexandria.schemas.loans_schemas import LoanList, LoanStatus
 from alexandria.security import get_password_hash
 
@@ -140,6 +140,7 @@ async def book_db(author: Author, session: AsyncSession) -> BookDatabase:
 
     return book
 
+
 def to_serialize(book: BookDatabase) -> dict[str, Any]:
     return {
         'title': book.title,
@@ -151,6 +152,7 @@ def to_serialize(book: BookDatabase) -> dict[str, Any]:
         'availables': 5,
         'id': book.id,
     }
+
 
 @pytest.fixture
 def book(author: Author) -> dict[str, Any]:

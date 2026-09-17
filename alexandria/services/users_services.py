@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from alexandria.exceptions.users_exceptions import EmailAlreadyExist
 from alexandria.models.db_models import UserDatabase
 from alexandria.schemas.users_schemas import UserSchema, UserUpdate
 from alexandria.security import get_password_hash
@@ -16,9 +18,12 @@ class UserService:
             **user_schema.model_dump(exclude={'password'}),
             password=get_password_hash(user_schema.password),
         )
+        try:
+            self.session.add(user)
+            await self.session.commit()
+        except IntegrityError:
+            raise EmailAlreadyExist()
 
-        self.session.add(user)
-        await self.session.commit()
         await self.session.refresh(user)
 
         return user

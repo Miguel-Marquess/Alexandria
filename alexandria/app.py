@@ -6,6 +6,7 @@ from alexandria.exceptions.handlers import (
     books_handlers,
     loans_handlers,
     security_handlers,
+    users_handlers,
 )
 from alexandria.routers import auth, authors, books, loans, users
 
@@ -32,6 +33,7 @@ registry_handlers(
         books_handlers.book_exc_handlers,
         loans_handlers.loans_exc_handlers,
         security_handlers.security_exc_handlers,
+        users_handlers.users_exc_handlers,
     ],
 )
 
