@@ -11,7 +11,7 @@ from alexandria.schemas.authors_schemas import (
 from alexandria.schemas.core_schemas import Message
 from alexandria.services.authors_service import AuthorService
 
-router = APIRouter(tags=['authors'], prefix='/authors')
+router = APIRouter(tags=['authors'], prefix='/api/v1/authors')
 
 
 @router.get('/', response_model=AuthorsList, status_code=200)

@@ -13,7 +13,7 @@ from tests.conftest import LoanFactory
 
 
 def test_my_loans(three_loans: LoanList, client: TestClient, token: str) -> None:
-    response = client.get('/loans', headers={'Authorization': f'Bearer {token}'})
+    response = client.get('/api/v1/loans', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == three_loans.model_dump(mode='json')
@@ -23,7 +23,7 @@ def test_get_loans_active(
     client: TestClient, three_loans: LoanList, token: str
 ) -> None:
     response = client.get(
-        '/loans',
+        '/api/v1/loans',
         headers={'Authorization': f'Bearer {token}'},
         params={'status': 'active'},
     )
@@ -54,7 +54,7 @@ async def test_get_loans_returned(
     await session.commit()
 
     response = client.get(
-        '/loans',
+        '/api/v1/loans',
         headers={'Authorization': f'Bearer {token}'},
         params={'status': 'returned'},
     )
@@ -84,7 +84,7 @@ async def test_get_not_overdue_loan(
     await session.commit()
 
     response = client.get(
-        '/loans',
+        '/api/v1/loans',
         headers={'Authorization': f'Bearer {token}'},
         params={'overdue': False},
     )
@@ -114,7 +114,7 @@ async def test_get_true_overdue_loan(
     await session.commit()
 
     response = client.get(
-        '/loans',
+        '/api/v1/loans',
         headers={'Authorization': f'Bearer {token}'},
         params={'overdue': True},
     )
@@ -145,7 +145,7 @@ async def test_get_book_id_loan(
     await session.commit()
 
     response = client.get(
-        '/loans',
+        '/api/v1/loans',
         headers={'Authorization': f'Bearer {token}'},
         params={'book_id': book_db.id},
     )

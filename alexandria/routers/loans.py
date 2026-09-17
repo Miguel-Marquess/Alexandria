@@ -11,7 +11,7 @@ from alexandria.models.db_models import LoanDatabase
 from alexandria.schemas.loans_schemas import LoanList, LoanPublic
 from alexandria.services.loans_service import LoanService
 
-router = APIRouter(tags=['Loans'], prefix='/loans')
+router = APIRouter(tags=['Loans'], prefix='/api/v1/loans')
 
 
 @router.post('/{book_isbn}', status_code=201, response_model=LoanPublic)

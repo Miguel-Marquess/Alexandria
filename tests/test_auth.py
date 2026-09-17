@@ -15,7 +15,7 @@ def test_token_access(
     client: TestClient, clean_password: str, user: UserDatabase
 ) -> None:
     response = client.post(
-        '/auth/login', data={'username': user.email, 'password': clean_password}
+        '/api/v1/auth/login', data={'username': user.email, 'password': clean_password}
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -32,7 +32,7 @@ def test_token_access(
 
 def test_token_with_wrong_password(client: TestClient, user: UserDatabase) -> None:
     response = client.post(
-        '/auth/login', data={'username': user.email, 'password': 'wrongpassword'}
+        '/api/v1/auth/login', data={'username': user.email, 'password': 'wrongpassword'}
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -43,7 +43,8 @@ def test_token_with_wrong_email(
     client: TestClient, clean_password: str, user: UserDatabase
 ) -> None:
     response = client.post(
-        '/auth/login', data={'username': 'wrongemail', 'password': clean_password}
+        '/api/v1/auth/login',
+        data={'username': 'wrongemail', 'password': clean_password},
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -52,7 +53,7 @@ def test_token_with_wrong_email(
 
 def test_token_with_invalid_token(client: TestClient) -> None:
     response = client.delete(
-        '/users/me', headers={'Authorization': 'Bearer invalid-token'}
+        '/api/v1/users/me', headers={'Authorization': 'Bearer invalid-token'}
     )
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
@@ -63,7 +64,7 @@ def test_token_without_sub(client: TestClient) -> None:
     invalid_token = create_access_token({})
 
     response = client.delete(
-        '/users/me', headers={'Authorization': f'Bearer {invalid_token}'}
+        '/api/v1/users/me', headers={'Authorization': f'Bearer {invalid_token}'}
     )
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
@@ -75,7 +76,9 @@ def test_invalid_user(client: TestClient) -> None:
 
     token = create_access_token({'sub': user.email})
 
-    response = client.delete('/users/me', headers={'Authorization': f'Bearer {token}'})
+    response = client.delete(
+        '/api/v1/users/me', headers={'Authorization': f'Bearer {token}'}
+    )
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json() == 'Credentials cannot be validateds.'

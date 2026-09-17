@@ -51,17 +51,17 @@ class LoanService:
         if late_loans:
             raise LateLoans([loan.id for loan in late_loans])
 
-        active_loans = await self.session.scalar(
-            select(func.count())
-            .select_from(LoanDatabase)
-            .where(
-                LoanDatabase.user_id == user.id,
-                LoanDatabase.status == LoanStatus.ACTIVE,
+        active_loans = (
+            await self.session.scalar(
+                select(func.count())
+                .select_from(LoanDatabase)
+                .where(
+                    LoanDatabase.user_id == user.id,
+                    LoanDatabase.status == LoanStatus.ACTIVE,
+                )
             )
+            or 0
         )
-
-        if active_loans is None:
-            raise RuntimeError('COUNT() returned a unexpected value [None]')
 
         if active_loans >= settings.MAX_VALUE_LOANS:
             raise MaxUserLoans()

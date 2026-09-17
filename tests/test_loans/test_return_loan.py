@@ -20,7 +20,7 @@ async def test_return_loan(
 ) -> None:
     before_return = datetime.now(tz=ZoneInfo('UTC'))
     response = client.patch(
-        f'/loans/{loan.id}/return', headers={'Authorization': f'Bearer {token}'}
+        f'/api/v1/loans/{loan.id}/return', headers={'Authorization': f'Bearer {token}'}
     )
 
     await session.refresh(book_db)
@@ -43,7 +43,7 @@ def test_return_not_existent_loan(
     token: str,
 ) -> None:
     response = client.patch(
-        f'/loans/{-1}/return', headers={'Authorization': f'Bearer {token}'}
+        f'/api/v1/loans/{-1}/return', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
@@ -56,13 +56,13 @@ def test_return_loan_already_returned(
     loan: LoanDatabase,
 ) -> None:
     response = client.patch(
-        f'/loans/{loan.id}/return', headers={'Authorization': f'Bearer {token}'}
+        f'/api/v1/loans/{loan.id}/return', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.OK
 
     response2 = client.patch(
-        f'/loans/{loan.id}/return', headers={'Authorization': f'Bearer {token}'}
+        f'/api/v1/loans/{loan.id}/return', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response2.status_code == HTTPStatus.CONFLICT

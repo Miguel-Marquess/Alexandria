@@ -11,7 +11,7 @@ from alexandria.security import verify_password
 
 def test_update_user(client: TestClient, user: UserDatabase, token: str) -> None:
     response = client.patch(
-        'users/me',
+        '/api/v1/users/me',
         headers={'Authorization': f'Bearer {token}'},
         json={'username': 'updated_name', 'email': 'updated_email@example.com'},
     )
@@ -29,7 +29,7 @@ async def test_update_user_password(
 ) -> None:
     password = 'updatedpassword'
     response = client.patch(
-        '/users/me',
+        '/api/v1/users/me',
         json={'password': password},
         headers={'Authorization': f'Bearer {token}'},
     )

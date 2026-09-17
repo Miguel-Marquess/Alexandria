@@ -10,7 +10,7 @@ from alexandria.schemas.users_schemas import (
 )
 from alexandria.services.users_services import UserService
 
-router = APIRouter(tags=['users'], prefix='/users')
+router = APIRouter(tags=['users'], prefix='/api/v1/users')
 
 
 @router.get('/', status_code=200, response_model=UserPublic)

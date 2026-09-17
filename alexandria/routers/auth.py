@@ -10,7 +10,7 @@ from alexandria.models.db_models import UserDatabase
 from alexandria.schemas.auth_schemas import Token
 from alexandria.security import create_access_token, verify_password
 
-router = APIRouter(tags=['auth'], prefix='/auth')
+router = APIRouter(tags=['auth'], prefix='/api/v1/auth')
 
 
 @router.post('/login', response_model=Token)

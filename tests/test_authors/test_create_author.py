@@ -13,7 +13,7 @@ async def test_create_author(
     client: TestClient, token: str, session: AsyncSession
 ) -> None:
     response = client.post(
-        '/authors',
+        '/api/v1/authors',
         headers={'Authorization': f'Bearer {token}'},
         json={'name': 'testauthor'},
     )
@@ -34,7 +34,9 @@ def test_create_author_with_name_none(
     client: TestClient, token: str, session: AsyncSession
 ) -> None:
     response = client.post(
-        '/authors', headers={'Authorization': f'Bearer {token}'}, json={'name': ''}
+        '/api/v1/authors',
+        headers={'Authorization': f'Bearer {token}'},
+        json={'name': ''},
     )
 
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
