@@ -17,7 +17,7 @@ from alexandria.settings import Settings
 settings = Settings()
 pwd_context = PasswordHash.recommended()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/login')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/v1/auth/login')
 
 
 def get_password_hash(password: str) -> str:
