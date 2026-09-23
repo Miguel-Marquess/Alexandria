@@ -9,7 +9,8 @@ from alexandria.exceptions.handlers import (
     users_handlers,
 )
 from alexandria.routers import auth, authors, books, loans, users
-
+from starlette.middleware.base import BaseHTTPMiddleware
+from alexandria.middleware import log_middleware
 
 def registry_routers(app: FastAPI, routers: list) -> None:
     for endpoint in routers:
@@ -21,8 +22,9 @@ def registry_handlers(app: FastAPI, handlers: list) -> None:
         for exc, func in handler.items():
             app.add_exception_handler(exc, func)
 
-
 app = FastAPI(title='Library System', version='0.1.0')
+
+app.add_middleware(BaseHTTPMiddleware, dispatch=log_middleware)
 
 registry_routers(app, [auth, authors, books, loans, users])
 registry_handlers(

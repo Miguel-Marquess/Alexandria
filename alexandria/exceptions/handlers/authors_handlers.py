@@ -6,6 +6,7 @@ from alexandria.exceptions.authors_exceptions import (
     AuthorNone,
     AuthorNotFound,
 )
+from alexandria.loggers import logger
 
 handler = FastAPI()
 
