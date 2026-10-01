@@ -43,6 +43,8 @@ jobs:
           ALGORITHM: ${{ secrets.ALGORITHM }}
           ACCESS_TOKEN_EXPIRE_MINUTES_TIME: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES_TIME }}
           TOKEN_SECRET_KEY: ${{ secrets.TOKEN_SECRET_KEY }}
+          STACK_TOKEN: fake_token
+          STACK_HOST: fake_host
           POSTGRES_USER : fake_user
           POSTGRES_DB : fake_db
           POSTGRES_PASSWORD : fake_password

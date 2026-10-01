@@ -31,7 +31,8 @@ async def test_create_author(
 
 
 def test_create_author_with_name_none(
-    client: TestClient, token: str, session: AsyncSession
+    client: TestClient,
+    token: str,
 ) -> None:
     response = client.post(
         '/api/v1/authors',
@@ -40,4 +41,5 @@ def test_create_author_with_name_none(
     )
 
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
-    assert response.json() == 'Author name cannot be None.'
+    assert response.json()['detail'] == 'Author name cannot be None.'
+    assert response.json()['code'] == 'AUTHOR_NAME_NONE'

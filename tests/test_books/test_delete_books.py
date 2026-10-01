@@ -34,9 +34,10 @@ def test_dont_delete_book_with_active_loan(
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == (
-        f'Book (ISBN [{book_db.isbn}]) is currently on loan. Cannot delete him.'
+    assert response.json()['detail'] == (
+        f'Book with ISBN {book_db.isbn} is currently on loan. Cannot delete him.'
     )
+    assert response.json()['code'] == ('BOOK_IN_CURRENTLY_LOAN')
 
 
 def test_delete_book_not_found(client: TestClient, token: str) -> None:
@@ -45,4 +46,5 @@ def test_delete_book_not_found(client: TestClient, token: str) -> None:
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == 'Book (ISBN [-1]) not found. Verify.'
+    assert response.json()['detail'] == 'Book with ISBN -1 was not found.'
+    assert response.json()['code'] == ('BOOK_NOT_FOUND')

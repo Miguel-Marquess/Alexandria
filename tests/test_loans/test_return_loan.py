@@ -43,11 +43,12 @@ def test_return_not_existent_loan(
     token: str,
 ) -> None:
     response = client.patch(
-        f'/api/v1/loans/{-1}/return', headers={'Authorization': f'Bearer {token}'}
+        '/api/v1/loans/-1/return', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == 'Loan (ID [-1]) not found.'
+    assert response.json()['detail'] == 'Loan with ID -1 was not found.'
+    assert response.json()['code'] == ('LOAN_NOT_FOUND')
 
 
 def test_return_loan_already_returned(
@@ -66,4 +67,5 @@ def test_return_loan_already_returned(
     )
 
     assert response2.status_code == HTTPStatus.CONFLICT
-    assert response2.json() == f'Loan (ID [{loan.id}]) is already returned.'
+    assert response2.json()['detail'] == f'Loan with ID {loan.id} is already returned.'
+    assert response2.json()['code'] == ('LOAN_ALREADY_RETURNED')

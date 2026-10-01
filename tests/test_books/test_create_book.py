@@ -33,4 +33,5 @@ def test_insert_book_author_not_found(
     book.update({'id': 1})
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == 'Author (ID [0]) not found.'
+    assert response.json()['detail'] == 'Author with ID 0 was not found.'
+    assert response.json()['code'] == 'AUTHOR_NOT_FOUND'

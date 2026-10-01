@@ -36,7 +36,8 @@ def test_token_with_wrong_password(client: TestClient, user: UserDatabase) -> No
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == 'Email or Password incorrect.'
+    assert response.json()['detail'] == 'Email or Password incorrect.'
+    assert response.json()['code'] == 'INVALID_EMAIL_OR_PASSWORD'
 
 
 def test_token_with_wrong_email(
@@ -48,7 +49,8 @@ def test_token_with_wrong_email(
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == 'Email or Password incorrect.'
+    assert response.json()['detail'] == 'Email or Password incorrect.'
+    assert response.json()['code'] == 'INVALID_EMAIL_OR_PASSWORD'
 
 
 def test_token_with_invalid_token(client: TestClient) -> None:
@@ -57,7 +59,8 @@ def test_token_with_invalid_token(client: TestClient) -> None:
     )
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.json() == 'Credentials cannot be validateds.'
+    assert response.json()['detail'] == 'Credentials cannot be validateds.'
+    assert response.json()['code'] == 'INVALID_CREDENTIALS'
 
 
 def test_token_without_sub(client: TestClient) -> None:
@@ -68,7 +71,8 @@ def test_token_without_sub(client: TestClient) -> None:
     )
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.json() == 'Credentials cannot be validateds.'
+    assert response.json()['detail'] == 'Credentials cannot be validateds.'
+    assert response.json()['code'] == 'INVALID_CREDENTIALS'
 
 
 def test_invalid_user(client: TestClient) -> None:
@@ -81,4 +85,5 @@ def test_invalid_user(client: TestClient) -> None:
     )
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.json() == 'Credentials cannot be validateds.'
+    assert response.json()['detail'] == 'Credentials cannot be validateds.'
+    assert response.json()['code'] == 'INVALID_CREDENTIALS'

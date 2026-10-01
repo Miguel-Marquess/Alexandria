@@ -10,7 +10,8 @@ handler = FastAPI()
 @handler.exception_handler(EmailAlreadyExist)
 async def email_already_exists(req: Request, exc: EmailAlreadyExist) -> JSONResponse:
     return JSONResponse(
-        status_code=409, content={'detail': 'This Email already exist.'}
+        status_code=409,
+        content={'detail': 'This Email already exist.', 'code': 'EMAIL_ALREADY_EXIST'},
     )
 
 

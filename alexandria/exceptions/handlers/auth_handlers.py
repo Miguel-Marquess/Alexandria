@@ -11,7 +11,13 @@ handler = FastAPI()
 async def email_or_password_incorrect(
     req: Request, exc: IncorrectEmailOrPassword
 ) -> JSONResponse:
-    return JSONResponse(status_code=400, content='Email or Password incorrect.')
+    return JSONResponse(
+        status_code=400,
+        content={
+            'detail': 'Email or Password incorrect.',
+            'code': 'INVALID_EMAIL_OR_PASSWORD',
+        },
+    )
 
 
 auth_exceptions_handelers = {
