@@ -26,15 +26,14 @@ def test_get_book_by_isbn(
     assert response.json() == book_list([book_db])
 
 
-def test_invalid_isbn(client: TestClient, token: str) -> None:
+def test_get_book_by_id(client: TestClient, book_db: BookDatabase, token: str) -> None:
     response = client.get(
         '/api/v1/books',
         headers={'Authorization': f'Bearer {token}'},
-        params={'isbn': 'invalid'},
+        params={'id': book_db.id},
     )
-
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == 'Book ID or ISBN not found.'
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == book_list([book_db])
 
 
 def test_get_book_by_title(

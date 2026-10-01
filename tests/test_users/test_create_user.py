@@ -26,4 +26,5 @@ def test_email_already_exist(client: TestClient, user: UserDatabase) -> None:
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {'detail': 'This Email already exist.'}
+    assert response.json()['detail'] == 'This Email already exist.'
+    assert response.json()['code'] == 'EMAIL_ALREADY_EXIST'

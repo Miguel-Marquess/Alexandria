@@ -11,7 +11,10 @@ handler = FastAPI()
 async def invalid_credentials(req: Request, exc: InvalidCredentials) -> JSONResponse:
     return JSONResponse(
         status_code=401,
-        content='Credentials cannot be validateds.',
+        content={
+            'detail': 'Credentials cannot be validateds.',
+            'code': 'INVALID_CREDENTIALS',
+        },
         headers={'WWW-Authenticate': 'Bearer'},
     )
 

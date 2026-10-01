@@ -16,9 +16,11 @@ handler = FastAPI()
 async def late_loans_handler(res: Request, exc: LateLoans) -> JSONResponse:
     return JSONResponse(
         status_code=409,
-        content=(
-            f"You have late loans with ID's {exc.loans_id}. Verify and try again."
-        ),
+        content=({
+            'detail': f"You have late loans with ID's "
+            f'{exc.loans_id}. Verify and try again.',
+            'code': 'LATE_LOAN',
+        }),
     )
 
 
@@ -28,24 +30,33 @@ async def has_already_loan_with_book_handler(
 ) -> JSONResponse:
     return JSONResponse(
         status_code=409,
-        content=(
-            f'You already a loan (ID [{exc.loan_id}]) '
-            f'with this Book (ISBN [{exc.book_isbn}]).'
-        ),
+        content=({
+            'detail': f'You already a loan with ID {exc.loan_id} '
+            f'with a Book with ISBN {exc.book_isbn}.',
+            'code': 'LOAN_ALREADY_WITH_BOOK',
+        }),
     )
 
 
 @handler.exception_handler(MaxUserLoans)
 async def max_user_loans_handler(res: Request, exc: MaxUserLoans) -> JSONResponse:
     return JSONResponse(
-        status_code=409, content='User has reached the maximum number of active loans.'
+        status_code=409,
+        content={
+            'detail': 'User has reached the maximum number of active loans.',
+            'code': 'MAXIMUM_LOANS',
+        },
     )
 
 
 @handler.exception_handler(LoanNotFound)
 async def loan_not_found_handler(res: Request, exc: LoanNotFound) -> JSONResponse:
     return JSONResponse(
-        status_code=404, content=f'Loan (ID [{exc.loan_id}]) not found.'
+        status_code=404,
+        content={
+            'detail': f'Loan with ID {exc.loan_id} was not found.',
+            'code': 'LOAN_NOT_FOUND',
+        },
     )
 
 
@@ -54,7 +65,11 @@ async def loan_has_already_returned_handler(
     res: Request, exc: LoanAlreadyReturned
 ) -> JSONResponse:
     return JSONResponse(
-        status_code=409, content=f'Loan (ID [{exc.loan_id}]) is already returned.'
+        status_code=409,
+        content={
+            'detail': f'Loan with ID {exc.loan_id} is already returned.',
+            'code': 'LOAN_ALREADY_RETURNED',
+        },
     )
 
 

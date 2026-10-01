@@ -16,10 +16,11 @@ def test_delete_author_who_contains_registered_books(
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == (
-        f'Author (ID [{author.id}]) has registered books. '
-        'If you want continue, delete the authors books.'
+    assert response.json()['detail'] == (
+        f'Author with ID {author.id} has registered books. '
+        "If you want to continue, delete the author's books."
     )
+    assert response.json()['code'] == 'AUTHOR_HAS_BOOKS'
 
 
 def test_delete_author_with_wrong_id(client: TestClient, token: str) -> None:
@@ -28,7 +29,8 @@ def test_delete_author_with_wrong_id(client: TestClient, token: str) -> None:
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == 'Author (ID [-1]) not found.'
+    assert response.json()['detail'] == 'Author with ID -1 was not found.'
+    assert response.json()['code'] == 'AUTHOR_NOT_FOUND'
 
 
 @pytest.mark.asyncio

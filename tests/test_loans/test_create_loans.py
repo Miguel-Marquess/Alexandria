@@ -52,19 +52,21 @@ def test_create_loan_has_already_loan(
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == (
-        f'You already a loan (ID [{loan.id}]) with this Book (ISBN [{book_db.isbn}]).'
+    assert response.json()['detail'] == (
+        f'You already a loan with ID {loan.id} with a Book with ISBN {book_db.isbn}.'
     )
+    assert response.json()['code'] == ('LOAN_ALREADY_WITH_BOOK')
 
 
 def test_create_loan_book_not_exist(client: TestClient, token: str) -> None:
     response = client.post(
-        f'/api/v1/loans/{1}',
+        '/api/v1/loans/1',
         headers={'Authorization': f'Bearer {token}'},
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == 'Book (ISBN [1]) not found. Verify.'
+    assert response.json()['detail'] == 'Book with ISBN 1 was not found.'
+    assert response.json()['code'] == ('BOOK_NOT_FOUND')
 
 
 def test_create_loan_has_max_limit(
@@ -76,7 +78,10 @@ def test_create_loan_has_max_limit(
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == 'User has reached the maximum number of active loans.'
+    assert response.json()['detail'] == (
+        'User has reached the maximum number of active loans.'
+    )
+    assert response.json()['code'] == ('MAXIMUM_LOANS')
 
 
 @pytest.mark.asyncio
@@ -92,7 +97,10 @@ async def test_create_loan_book_not_availables(
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == f'Book (ISBN [{book_db.isbn}]) is not available.'
+    assert response.json()['detail'] == (
+        f'Book with ISBN {book_db.isbn} is not available.'
+    )
+    assert response.json()['code'] == ('BOOK_NOT_AVAILABLE')
 
 
 @pytest.mark.asyncio
@@ -121,6 +129,7 @@ async def test_create_loan_user_have_late_loans_in_database(
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == (
+    assert response.json()['detail'] == (
         f"You have late loans with ID's [{loan.id}]. Verify and try again."
     )
+    assert response.json()['code'] == ('LATE_LOAN')

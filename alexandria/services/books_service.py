@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from alexandria.exceptions.authors_exceptions import AuthorNotFound
 from alexandria.exceptions.books_exceptions import (
-    BookIdOrIsbnNotFound,
     BookInCurrentLoan,
     BookNotFound,
 )
@@ -39,21 +38,18 @@ class BookService:
     async def read_books(self, filter: FilterBook) -> Sequence[BookDatabase | None]:
         query = select(BookDatabase)
         if filter.isbn or filter.book_id:
-            # abstracao necessaria? nao saberemos
-            filters = [
-                getattr(BookDatabase, key) == value
-                for key, value in filter.model_dump(
-                    include={'isbn', 'book_id'},
-                    exclude_unset=True,
-                ).items()
-            ]
+            filters = (
+                (BookDatabase.id == filter.book_id)
+                if filter.book_id
+                else (BookDatabase.isbn == filter.isbn)
+            )
 
-            book = await self.session.scalar(select(BookDatabase).where(*filters))
+            breakpoint
+            book = (
+                await self.session.scalars(select(BookDatabase).where(filters))
+            ).all()
 
-            if not book:
-                raise BookIdOrIsbnNotFound()
-
-            return [book]
+            return book
 
         if filter.author_name:
             query = query.join(Author).where(Author.name.contains(filter.author_name))
