@@ -13,7 +13,7 @@ async def test_delete_book(
     client: TestClient, token: str, session: AsyncSession, book_db: BookDatabase
 ) -> None:
     response = client.delete(
-        f'/api/v1/books/{book_db.isbn}', headers={'Authorization': f'Bearer {token}'}
+        f'/api/v1/books/{book_db.id}', headers={'Authorization': f'Bearer {token}'}
     )
 
     book = await session.scalar(
@@ -30,12 +30,12 @@ def test_dont_delete_book_with_active_loan(
     client: TestClient, token: str, book_db: BookDatabase, loan: LoanDatabase
 ) -> None:
     response = client.delete(
-        f'/api/v1/books/{book_db.isbn}', headers={'Authorization': f'Bearer {token}'}
+        f'/api/v1/books/{book_db.id}', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
     assert response.json()['detail'] == (
-        f'Book with ISBN {book_db.isbn} is currently on loan. Cannot delete him.'
+        f'Book with ID {book_db.id} is currently on loan. Cannot delete him.'
     )
     assert response.json()['code'] == ('BOOK_IN_CURRENTLY_LOAN')
 
@@ -46,5 +46,5 @@ def test_delete_book_not_found(client: TestClient, token: str) -> None:
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json()['detail'] == 'Book with ISBN -1 was not found.'
+    assert response.json()['detail'] == 'Book with ID -1 was not found.'
     assert response.json()['code'] == ('BOOK_NOT_FOUND')

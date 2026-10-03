@@ -1,16 +1,16 @@
 class BookNotFound(Exception):
     def __init__(
         self,
-        book_isbn: str,
+        book_id: int,
     ) -> None:
-        self.book_isbn = book_isbn
+        self.book_id = book_id
 
 
 class BookInCurrentLoan(Exception):
-    def __init__(self, book_isbn: str) -> None:
-        self.book_isbn = book_isbn
+    def __init__(self, book_id: int) -> None:
+        self.book_id = book_id
 
 
 class BookNotAvailable(Exception):
-    def __init__(self, book_isbn: str) -> None:
-        self.book_isbn = book_isbn
+    def __init__(self, book_id: int) -> None:
+        self.book_id = book_id

@@ -28,16 +28,16 @@ settings = Settings()
 class LoanService:
     session: AsyncSession
 
-    async def get_book(self, book_isbn: str) -> BookDatabase | None:
+    async def get_book(self, book_id: int) -> BookDatabase | None:
         return (
             await self.session.scalars(
                 select(BookDatabase)
                 .options(selectinload(BookDatabase.author))  # carrega o author tambem
-                .where(BookDatabase.isbn == book_isbn)
+                .where(BookDatabase.id == book_id)
             )
         ).first()
 
-    async def create_loan(self, book_isbn: str, user: UserDatabase) -> LoanDatabase:
+    async def create_loan(self, book_id: int, user: UserDatabase) -> LoanDatabase:
         late_loans = (
             await self.session.scalars(
                 select(LoanDatabase).where(
@@ -70,24 +70,22 @@ class LoanService:
             select(LoanDatabase)
             .join(BookDatabase)
             .where(
-                BookDatabase.isbn == book_isbn,
+                BookDatabase.id == book_id,
                 LoanDatabase.user_id == user.id,
                 LoanDatabase.status == LoanStatus.ACTIVE,
             )
         )
 
         if has_already_loan:
-            raise HasAlreadyLoanWithBook(
-                has_already_loan.id, has_already_loan.book.isbn
-            )
+            raise HasAlreadyLoanWithBook(has_already_loan.id, has_already_loan.book.id)
 
-        book = await self.get_book(book_isbn)
+        book = await self.get_book(book_id)
 
         if book is None:
-            raise BookNotFound(book_isbn)
+            raise BookNotFound(book_id)
 
         if book.availables <= 0:
-            raise BookNotAvailable(book_isbn)
+            raise BookNotAvailable(book_id)
 
         book.availables -= 1
 
@@ -123,10 +121,10 @@ class LoanService:
         loan.returned_at = datetime.now(tz=ZoneInfo('UTC'))
         loan.status = LoanStatus.RETURNED
 
-        book = await self.get_book(book_isbn=loan.book.isbn)
+        book = await self.get_book(book_id=loan.book.id)
 
         if book is None:
-            raise BookNotFound(book_isbn=loan.book.isbn)
+            raise BookNotFound(book_id=loan.book.id)
 
         book.availables += 1
 

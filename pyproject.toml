@@ -78,7 +78,7 @@ extend-exclude = ["*.md"]
 lint = 'ruff check'
 pre_format = 'ruff check --fix'
 format = 'ruff format'
-hints = 'mypy . '
+type = 'mypy . '
 run = 'fastapi dev alexandria/app.py'
 test = 'pytest -s -x -vv --cov=alexandria --cov-report=term-missing --cov-report=html:coverage_html'
 covarage = 'xdg-open coverage_html/index.html'

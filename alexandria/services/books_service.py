@@ -44,7 +44,6 @@ class BookService:
                 else (BookDatabase.isbn == filter.isbn)
             )
 
-            breakpoint
             book = (
                 await self.session.scalars(select(BookDatabase).where(filters))
             ).all()
@@ -84,15 +83,15 @@ class BookService:
 
         return result
 
-    async def delete_book(self, book_isbn: str) -> None:
+    async def delete_book(self, book_id: int) -> None:
         book = await self.session.scalar(
-            select(BookDatabase).where(BookDatabase.isbn == book_isbn)
+            select(BookDatabase).where(BookDatabase.id == book_id)
         )
 
         if not book:
-            raise BookNotFound(book_isbn)
+            raise BookNotFound(book_id)
 
         if book.quantity != book.availables:
-            raise BookInCurrentLoan(book.isbn)
+            raise BookInCurrentLoan(book.id)
 
         await self.session.delete(book)

@@ -15,7 +15,7 @@ async def book_not_found_handler(req: Request, exc: BookNotFound) -> JSONRespons
     return JSONResponse(
         status_code=404,
         content={
-            'detail': f'Book with ISBN {exc.book_isbn} was not found.',
+            'detail': f'Book with ID {exc.book_id} was not found.',
             'code': 'BOOK_NOT_FOUND',
         },
     )
@@ -28,7 +28,7 @@ async def book_not_available_handler(
     return JSONResponse(
         status_code=409,
         content={
-            'detail': f'Book with ISBN {exc.book_isbn} is not available.',
+            'detail': f'Book with ID {exc.book_id} is not available.',
             'code': 'BOOK_NOT_AVAILABLE',
         },
     )
@@ -39,7 +39,7 @@ async def book_in_current_loan(req: Request, exc: BookInCurrentLoan) -> JSONResp
     return JSONResponse(
         status_code=409,
         content={
-            'detail': f'Book with ISBN {exc.book_isbn} '
+            'detail': f'Book with ID {exc.book_id} '
             f'is currently on loan. Cannot delete him.',
             'code': 'BOOK_IN_CURRENTLY_LOAN',
         },

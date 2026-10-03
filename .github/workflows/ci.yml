@@ -35,7 +35,7 @@ jobs:
         run: poetry run task format
       
       - name: Run mypy
-        run: poetry run task hints
+        run: poetry run task type
       
       - name: Run tests
         env:

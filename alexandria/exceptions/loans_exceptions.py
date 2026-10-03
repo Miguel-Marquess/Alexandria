@@ -1,7 +1,7 @@
 class HasAlreadyLoanWithBook(Exception):
-    def __init__(self, loan_id: int, book_isbn: str) -> None:
+    def __init__(self, loan_id: int, book_id: int) -> None:
         self.loan_id = loan_id
-        self.book_isbn = book_isbn
+        self.book_id = book_id
 
 
 class LateLoans(Exception):

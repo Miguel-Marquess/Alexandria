@@ -14,9 +14,9 @@ from alexandria.services.loans_service import LoanService
 router = APIRouter(tags=['Loans'], prefix='/api/v1/loans')
 
 
-@router.post('/{book_isbn}', status_code=201, response_model=LoanPublic)
-async def make_loan(book_isbn: str, user: Current_user, session: Session) -> LoanPublic:
-    loan = await LoanService(session).create_loan(book_isbn=book_isbn, user=user)
+@router.post('/{book_id}', status_code=201, response_model=LoanPublic)
+async def make_loan(book_id: int, user: Current_user, session: Session) -> LoanPublic:
+    loan = await LoanService(session).create_loan(book_id=book_id, user=user)
     return LoanPublic.model_validate(loan)
 
 
