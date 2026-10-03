@@ -16,15 +16,13 @@ async def test_create_loan_rollback(
 ) -> None:
     mocker.patch.object(session, 'commit', side_effect=Exception('Erro no commit'))
 
-    book_isbn = book_db.isbn
+    book_id = book_db.id
     user_id = user.id
 
     with pytest.raises(Exception, match='Erro no commit'):
-        await LoanService(session).create_loan(book_isbn, user)
+        await LoanService(session).create_loan(book_id, user)
 
-    book = await session.scalar(
-        select(BookDatabase).where(BookDatabase.isbn == book_isbn)
-    )
+    book = await session.scalar(select(BookDatabase).where(BookDatabase.id == book_id))
 
     assert book is not None
 

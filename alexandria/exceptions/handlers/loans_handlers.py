@@ -32,7 +32,7 @@ async def has_already_loan_with_book_handler(
         status_code=409,
         content=({
             'detail': f'You already a loan with ID {exc.loan_id} '
-            f'with a Book with ISBN {exc.book_isbn}.',
+            f'with a Book with ID {exc.book_id}.',
             'code': 'LOAN_ALREADY_WITH_BOOK',
         }),
     )

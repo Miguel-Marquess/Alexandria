@@ -33,9 +33,9 @@ async def read_books(
     return BookList(books=books)
 
 
-@router.delete('/{book_isbn}', status_code=200, response_model=Message)
+@router.delete('/{book_id}', status_code=200, response_model=Message)
 async def delete_book(
-    book_isbn: str, user: Current_user, session: Session
+    book_id: int, user: Current_user, session: Session
 ) -> dict[str, str]:
-    await BookService(session).delete_book(book_isbn)
+    await BookService(session).delete_book(book_id)
     return {'message': 'Book was deleted.'}

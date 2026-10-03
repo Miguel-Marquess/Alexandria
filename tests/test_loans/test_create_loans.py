@@ -21,7 +21,7 @@ async def test_create_loan(
     session: AsyncSession,
 ) -> None:
     response = client.post(
-        f'/api/v1/loans/{book_db.isbn}',
+        f'/api/v1/loans/{book_db.id}',
         headers={'Authorization': f'Bearer {token}'},
     )
 
@@ -29,7 +29,7 @@ async def test_create_loan(
         select(LoanDatabase)
         .join(BookDatabase)
         .where(
-            BookDatabase.isbn == book_db.isbn,
+            BookDatabase.id == book_db.id,
             LoanDatabase.user_id == user.id,
             LoanDatabase.status == LoanStatus.ACTIVE,
         )
@@ -48,12 +48,12 @@ def test_create_loan_has_already_loan(
     client: TestClient, loan: LoanDatabase, token: str, book_db: BookDatabase
 ) -> None:
     response = client.post(
-        f'/api/v1/loans/{book_db.isbn}', headers={'Authorization': f'Bearer {token}'}
+        f'/api/v1/loans/{book_db.id}', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
     assert response.json()['detail'] == (
-        f'You already a loan with ID {loan.id} with a Book with ISBN {book_db.isbn}.'
+        f'You already a loan with ID {loan.id} with a Book with ID {book_db.id}.'
     )
     assert response.json()['code'] == ('LOAN_ALREADY_WITH_BOOK')
 
@@ -65,7 +65,7 @@ def test_create_loan_book_not_exist(client: TestClient, token: str) -> None:
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json()['detail'] == 'Book with ISBN 1 was not found.'
+    assert response.json()['detail'] == 'Book with ID 1 was not found.'
     assert response.json()['code'] == ('BOOK_NOT_FOUND')
 
 
@@ -73,7 +73,7 @@ def test_create_loan_has_max_limit(
     client: TestClient, token: str, book_db: BookDatabase, three_loans: LoanList
 ) -> None:
     response = client.post(
-        f'/api/v1/loans/{book_db.isbn}',
+        f'/api/v1/loans/{book_db.id}',
         headers={'Authorization': f'Bearer {token}'},
     )
 
@@ -93,13 +93,11 @@ async def test_create_loan_book_not_availables(
     await session.commit()
 
     response = client.post(
-        f'/api/v1/loans/{book_db.isbn}', headers={'Authorization': f'Bearer {token}'}
+        f'/api/v1/loans/{book_db.id}', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json()['detail'] == (
-        f'Book with ISBN {book_db.isbn} is not available.'
-    )
+    assert response.json()['detail'] == (f'Book with ID {book_db.id} is not available.')
     assert response.json()['code'] == ('BOOK_NOT_AVAILABLE')
 
 
@@ -111,7 +109,8 @@ async def test_create_loan_user_have_late_loans_in_database(
     book_db: BookDatabase,
     user: UserDatabase,
 ) -> None:
-    book = BookFactory()
+    book = cast(BookDatabase, BookFactory())
+
     loan = cast(
         LoanDatabase,
         LoanFactory(
@@ -122,10 +121,12 @@ async def test_create_loan_user_have_late_loans_in_database(
     session.add_all([loan, book])
 
     await session.commit()
-    await session.refresh(loan)
+
+    for entity in [loan, book]:
+        await session.refresh(entity)
 
     response = client.post(
-        f'/api/v1/loans/{book.isbn}', headers={'Authorization': f'Bearer {token}'}
+        f'/api/v1/loans/{book.id}', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
