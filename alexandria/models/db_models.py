@@ -9,35 +9,30 @@ from sqlalchemy.orm import (
     relationship,
 )
 
+from alexandria.models.mixins import AuditorMixin, TimeStampMixin
 from alexandria.schemas.loans_schemas import LoanStatus
 
 registry_table = registry()
 
 
 @mapped_as_dataclass(registry_table)
-class UserDatabase:
+class UserDatabase(TimeStampMixin):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     username: Mapped[str] = mapped_column(nullable=False)
     email: Mapped[str] = mapped_column(nullable=False, unique=True)
     password: Mapped[str] = mapped_column(nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), init=False, server_default=func.now()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        init=False,
-        onupdate=func.now(),
-        server_default=func.now(),
-    )
     loans: Mapped[list['LoanDatabase']] = relationship(
-        back_populates='user', lazy='selectin', init=False
+        back_populates='user',
+        lazy='selectin',
+        init=False,
+        foreign_keys='LoanDatabase.user_id',
     )
 
 
 @mapped_as_dataclass(registry_table)
-class BookDatabase:
+class BookDatabase(AuditorMixin):
     __tablename__ = 'books'
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
@@ -55,7 +50,7 @@ class BookDatabase:
 
 
 @mapped_as_dataclass(registry_table)
-class LoanDatabase:
+class LoanDatabase(AuditorMixin):
     __tablename__ = 'loan'
 
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
@@ -72,15 +67,15 @@ class LoanDatabase:
         Enum(LoanStatus), default=LoanStatus.ACTIVE
     )
     user: Mapped['UserDatabase'] = relationship(
-        back_populates='loans', init=False, repr=False
+        back_populates='loans', init=False, repr=False, foreign_keys=[user_id]
     )
     book: Mapped['BookDatabase'] = relationship(
-        back_populates='loans', init=False, repr=False
+        back_populates='loans', init=False, repr=False, lazy='selectin'
     )
 
 
 @mapped_as_dataclass(registry_table)
-class Author:
+class Author(AuditorMixin):
     __tablename__ = 'authors'
 
     id: Mapped[int] = mapped_column(nullable=False, primary_key=True, init=False)

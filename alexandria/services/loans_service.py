@@ -19,6 +19,7 @@ from alexandria.exceptions.loans_exceptions import (
 )
 from alexandria.models.db_models import BookDatabase, LoanDatabase, UserDatabase
 from alexandria.schemas.loans_schemas import LoanStatus
+from alexandria.services.audits import set_created_audits, set_updated_audits
 from alexandria.settings import Settings
 
 settings = Settings()
@@ -94,6 +95,8 @@ class LoanService:
             book_id=book.id,
             due_date=datetime.now(tz=ZoneInfo('UTC')) + timedelta(days=15),
         )
+        set_created_audits(user, loan)
+        set_updated_audits(user, [book])
 
         self.session.add_all([book, loan])
         try:
@@ -127,6 +130,7 @@ class LoanService:
             raise BookNotFound(book_id=loan.book.id)
 
         book.availables += 1
+        set_updated_audits(user, [loan, book])
 
         self.session.add_all([loan, book])
         await self.session.commit()

@@ -11,8 +11,9 @@ from alexandria.exceptions.authors_exceptions import (
     AuthorNone,
     AuthorNotFound,
 )
-from alexandria.models.db_models import Author
+from alexandria.models.db_models import Author, UserDatabase
 from alexandria.schemas.authors_schemas import AuthorSchema
+from alexandria.services.audits import set_created_audits
 
 
 @dataclass
@@ -31,11 +32,15 @@ class AuthorService:
 
         return (await self.session.scalars(query)).all()
 
-    async def create_author(self, author_schema: AuthorSchema) -> Author:
+    async def create_author(
+        self, author_schema: AuthorSchema, user: UserDatabase
+    ) -> Author:
         if not author_schema.name:
             raise AuthorNone()
 
         author = Author(name=author_schema.name)
+        set_created_audits(user, author)
+
         self.session.add(author)
         await self.session.commit()
 
