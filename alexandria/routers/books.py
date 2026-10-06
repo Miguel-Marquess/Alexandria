@@ -18,7 +18,7 @@ router = APIRouter(tags=['library'], prefix='/api/v1/books')
 async def insert_books(
     book: Book, session: Session, current_user: Current_user
 ) -> BookPublic:
-    book_model = await BookService(session).insert_book(book)
+    book_model = await BookService(session).insert_book(book, current_user)
     return BookPublic.model_validate(book_model)
 
 

@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
+from jwt.exceptions import ExpiredSignatureError
 
 from alexandria.exceptions.auth_exceptions import IncorrectEmailOrPassword
 
@@ -20,6 +21,15 @@ async def email_or_password_incorrect(
     )
 
 
+@handler.exception_handler(ExpiredSignatureError)
+async def expired_signature(req: Request, exc: ExpiredSignatureError) -> JSONResponse:
+    return JSONResponse(
+        status_code=401,
+        content={'detail': 'Signature has expired.', 'code': 'SIGNATURE_EXPIRED'},
+    )
+
+
 auth_exceptions_handelers = {
     IncorrectEmailOrPassword: email_or_password_incorrect,
+    ExpiredSignatureError: expired_signature,
 }

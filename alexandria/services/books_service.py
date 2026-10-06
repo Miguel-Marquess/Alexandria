@@ -9,15 +9,16 @@ from alexandria.exceptions.books_exceptions import (
     BookInCurrentLoan,
     BookNotFound,
 )
-from alexandria.models.db_models import Author, BookDatabase
+from alexandria.models.db_models import Author, BookDatabase, UserDatabase
 from alexandria.schemas.books_schemas import Book, BookOrder, FilterBook
+from alexandria.services.audits import set_created_audits
 
 
 @dataclass
 class BookService:
     session: AsyncSession
 
-    async def insert_book(self, book_schema: Book) -> BookDatabase:
+    async def insert_book(self, book_schema: Book, user: UserDatabase) -> BookDatabase:
         author_db = await self.session.scalar(
             select(Author).where(Author.id == book_schema.author_id)
         )
@@ -28,6 +29,7 @@ class BookService:
         db_book = BookDatabase(
             **book_schema.model_dump(exclude={'author_id'}), author=author_db
         )
+        set_created_audits(user, db_book)
 
         self.session.add(db_book)
         await self.session.commit()

@@ -31,7 +31,7 @@ async def create_author(
     author: AuthorSchema, user: Current_user, session: Session
 ) -> AuthorPublic:
     return AuthorPublic.model_validate(
-        await AuthorService(session).create_author(author)
+        await AuthorService(session).create_author(author, user)
     )
 
 
