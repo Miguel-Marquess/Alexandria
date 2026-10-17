@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 
+from alexandria.schemas.core_schemas import FilterPage
+
 
 class AuthorSchema(BaseModel):
     name: str
@@ -15,6 +17,6 @@ class AuthorsList(BaseModel):
     authors: list[AuthorPublic]
 
 
-class AuthorFilter(BaseModel):
+class AuthorFilter(FilterPage):
     name: str | None = None
     order: bool | None = None

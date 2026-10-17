@@ -30,7 +30,9 @@ class AuthorService:
         if filter.order:
             query = query.order_by(Author.name)
 
-        return (await self.session.scalars(query)).all()
+        return (
+            await self.session.scalars(query.offset(filter.offset).limit(filter.limit))
+        ).all()
 
     async def create_author(
         self, author_schema: AuthorSchema, user: UserDatabase

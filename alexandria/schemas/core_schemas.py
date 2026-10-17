@@ -6,5 +6,5 @@ class Message(BaseModel):
 
 
 class FilterPage(BaseModel):
-    start: int = Field(ge=0, default=0)
-    ends: int = Field(ge=0, default=10)
+    offset: int = Field(ge=0, default=0)
+    limit: int = Field(ge=0, default=10)

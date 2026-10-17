@@ -80,7 +80,7 @@ class BookService:
             query = query.order_by(order[filter.order_by])
 
         result = (
-            await self.session.scalars(query.offset(filter.start).limit(filter.ends))
+            await self.session.scalars(query.offset(filter.offset).limit(filter.limit))
         ).all()
 
         return result

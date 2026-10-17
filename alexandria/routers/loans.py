@@ -42,9 +42,10 @@ async def my_loans(
 
     if filter.overdue:
         query = query.where(LoanDatabase.due_date < datetime.now(tz=ZoneInfo('UTC')))
+
     if filter.overdue is False:
         query = query.where(LoanDatabase.due_date > datetime.now(tz=ZoneInfo('UTC')))
 
-    loans = await session.scalars(query.offset(filter.start).limit(filter.ends))
+    loans = await session.scalars(query.offset(filter.offset).limit(filter.limit))
 
     return LoanList(loans=loans)
