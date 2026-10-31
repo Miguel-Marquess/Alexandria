@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict
@@ -41,3 +42,11 @@ class FilterBook(FilterPage):
     isbn: str | None = None
     book_id: int | None = None
     order_by: BookOrder | None = None
+
+
+class QueueSchema(BaseModel):
+    id: int
+    book_id: int
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

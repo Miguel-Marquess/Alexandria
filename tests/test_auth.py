@@ -1,6 +1,8 @@
+from datetime import timedelta
 from http import HTTPStatus
 
 from fastapi.testclient import TestClient
+from freezegun import freeze_time
 from jwt import decode
 
 from alexandria.models.db_models import UserDatabase
@@ -87,3 +89,16 @@ def test_invalid_user(client: TestClient) -> None:
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json()['detail'] == 'Credentials cannot be validateds.'
     assert response.json()['code'] == 'INVALID_CREDENTIALS'
+
+
+def test_expired_signature(client: TestClient, token: str) -> None:
+    with freeze_time() as time:
+        time.tick(delta=timedelta(minutes=31))
+
+        response = client.delete(
+            '/api/v1/users/me', headers={'Authorization': f'Bearer {token}'}
+        )
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json()['detail'] == 'Signature has expired.'
+    assert response.json()['code'] == 'SIGNATURE_EXPIRED'

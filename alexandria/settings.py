@@ -16,3 +16,4 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     STACK_TOKEN: str
     STACK_HOST: str
+    MAX_RESERVED_BOOKS: int

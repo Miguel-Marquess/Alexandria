@@ -17,6 +17,7 @@ from alexandria.models.db_models import (
     Author,
     BookDatabase,
     LoanDatabase,
+    Reserve,
     UserDatabase,
     registry_table,
 )
@@ -193,6 +194,30 @@ class LoanFactory(factory.Factory):
     due_date = factory.LazyFunction(lambda: datetime.now() + timedelta(days=15))
     returned_at = None
     status = LoanStatus.ACTIVE
+
+
+class ReserveFactory(factory.Factory):
+    class Meta:
+        model = Reserve
+
+    book_id = factory.SelfAttribute('book.id')
+    user_id = factory.SelfAttribute('user.id')
+
+
+@pytest_asyncio.fixture
+async def reserve(
+    session: AsyncSession, book_db: BookDatabase, user: UserDatabase
+) -> Reserve:
+    reserve = cast(Reserve, ReserveFactory(book_id=book_db.id, user_id=user.id))
+
+    book_db.availables = 0
+
+    session.add_all([reserve, book_db])
+    await session.commit()
+    for obj in [book_db, reserve]:
+        await session.refresh(obj)
+
+    return reserve
 
 
 @pytest_asyncio.fixture

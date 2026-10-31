@@ -3,11 +3,7 @@ from fastapi import APIRouter
 from alexandria.depends.books_dependencies import BookFilter
 from alexandria.depends.database_dependencies import Session
 from alexandria.depends.users_dependencies import Current_user
-from alexandria.schemas.books_schemas import (
-    Book,
-    BookList,
-    BookPublic,
-)
+from alexandria.schemas.books_schemas import Book, BookList, BookPublic, QueueSchema
 from alexandria.schemas.core_schemas import Message
 from alexandria.services.books_service import BookService
 
@@ -39,3 +35,12 @@ async def delete_book(
 ) -> dict[str, str]:
     await BookService(session).delete_book(book_id)
     return {'message': 'Book was deleted.'}
+
+
+@router.post('/queue/{book_id}', response_model=QueueSchema, status_code=201)
+async def waiting_list(
+    user: Current_user, session: Session, book_id: int
+) -> QueueSchema:
+    reservation = await BookService(session=session).waiting_list(user, book_id)
+
+    return QueueSchema.model_validate(reservation)

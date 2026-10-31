@@ -42,6 +42,7 @@ async def my_loans(
 
     if filter.overdue:
         query = query.where(LoanDatabase.due_date < datetime.now(tz=ZoneInfo('UTC')))
+        
     if filter.overdue is False:
         query = query.where(LoanDatabase.due_date > datetime.now(tz=ZoneInfo('UTC')))
 

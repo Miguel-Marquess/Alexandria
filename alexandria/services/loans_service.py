@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import cast
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import func, select
@@ -17,7 +18,12 @@ from alexandria.exceptions.loans_exceptions import (
     LoanNotFound,
     MaxUserLoans,
 )
-from alexandria.models.db_models import BookDatabase, LoanDatabase, UserDatabase
+from alexandria.models.db_models import (
+    BookDatabase,
+    LoanDatabase,
+    Reserve,
+    UserDatabase,
+)
 from alexandria.schemas.loans_schemas import LoanStatus
 from alexandria.services.audits import set_created_audits, set_updated_audits
 from alexandria.settings import Settings
@@ -124,13 +130,29 @@ class LoanService:
         loan.returned_at = datetime.now(tz=ZoneInfo('UTC'))
         loan.status = LoanStatus.RETURNED
 
-        book = await self.get_book(book_id=loan.book.id)
+        book = cast(BookDatabase, await self.get_book(book_id=loan.book.id))
 
-        if book is None:
-            raise BookNotFound(book_id=loan.book.id)
-
-        book.availables += 1
         set_updated_audits(user, [loan, book])
+
+        have_reservation = await self.session.scalar(
+            select(Reserve)
+            .where(Reserve.book_id == book.id)
+            .order_by(Reserve.created_at)
+        )
+
+        if have_reservation:
+            reservation_loan = LoanDatabase(
+                user_id=have_reservation.user_id,
+                book_id=have_reservation.book_id,
+                due_date=datetime.now(tz=ZoneInfo('UTC')) + timedelta(days=15),
+            )
+
+            reservation_loan.created_by = reservation_loan.user_id
+
+            self.session.add(reservation_loan)
+            await self.session.delete(have_reservation)
+        else:
+            book.availables += 1
 
         self.session.add_all([loan, book])
         await self.session.commit()
