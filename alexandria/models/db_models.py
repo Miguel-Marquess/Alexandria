@@ -29,6 +29,12 @@ class UserDatabase(TimeStampMixin):
         init=False,
         foreign_keys='LoanDatabase.user_id',
     )
+    reserve: Mapped[list['Reserve']] = relationship(
+        init=False,
+        back_populates='user',
+        lazy='selectin',
+        foreign_keys='Reserve.user_id',
+    )
 
 
 @mapped_as_dataclass(registry_table)
@@ -46,6 +52,9 @@ class BookDatabase(AuditorMixin):
     availables: Mapped[int] = mapped_column(nullable=False)
     loans: Mapped[list['LoanDatabase']] = relationship(
         back_populates='book', lazy='selectin', init=False
+    )
+    reserve: Mapped[list['Reserve']] = relationship(
+        init=False, back_populates='book', lazy='selectin'
     )
 
 
@@ -67,7 +76,11 @@ class LoanDatabase(AuditorMixin):
         Enum(LoanStatus), default=LoanStatus.ACTIVE
     )
     user: Mapped['UserDatabase'] = relationship(
-        back_populates='loans', init=False, repr=False, foreign_keys=[user_id]
+        back_populates='loans',
+        init=False,
+        repr=False,
+        foreign_keys=[user_id],
+        lazy='selectin',
     )
     book: Mapped['BookDatabase'] = relationship(
         back_populates='loans', init=False, repr=False, lazy='selectin'
@@ -86,4 +99,24 @@ class Author(AuditorMixin):
         lazy='selectin',
         back_populates='author',
         repr=False,
+    )
+
+
+@mapped_as_dataclass(registry_table)
+class Reserve(AuditorMixin, TimeStampMixin):
+    __tablename__ = 'reserve'
+
+    id: Mapped[int] = mapped_column(nullable=False, init=False, primary_key=True)
+    book_id: Mapped[int] = mapped_column(ForeignKey('books.id'))
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+
+    book: Mapped[BookDatabase] = relationship(
+        init=False, lazy='selectin', back_populates='reserve', repr=False
+    )
+    user: Mapped[UserDatabase] = relationship(
+        init=False,
+        lazy='selectin',
+        back_populates='reserve',
+        repr=False,
+        foreign_keys=[user_id],
     )

@@ -1,17 +1,29 @@
 from dataclasses import dataclass
 from typing import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from alexandria.exceptions.authors_exceptions import AuthorNotFound
 from alexandria.exceptions.books_exceptions import (
+    AlreadyAvailablesBooks,
     BookInCurrentLoan,
     BookNotFound,
+    MaxReservedBooksAchieved,
 )
-from alexandria.models.db_models import Author, BookDatabase, UserDatabase
+from alexandria.exceptions.loans_exceptions import HasAlreadyLoanWithBook
+from alexandria.models.db_models import (
+    Author,
+    BookDatabase,
+    LoanDatabase,
+    Reserve,
+    UserDatabase,
+)
 from alexandria.schemas.books_schemas import Book, BookOrder, FilterBook
 from alexandria.services.audits import set_created_audits
+from alexandria.settings import Settings
+
+settings = Settings()
 
 
 @dataclass
@@ -97,3 +109,54 @@ class BookService:
             raise BookInCurrentLoan(book.id)
 
         await self.session.delete(book)
+
+    async def waiting_list(self, user: UserDatabase, book_id: int) -> Reserve:
+        book = await self.session.scalar(
+            select(BookDatabase).where(BookDatabase.id == book_id)
+        )
+
+        if book is None:
+            raise BookNotFound(book_id)
+
+        if book.availables:
+            raise AlreadyAvailablesBooks(book.id)
+
+        loan = await self.session.scalar(
+            select(LoanDatabase).where(
+                LoanDatabase.book_id == book.id, LoanDatabase.user_id == user.id
+            )
+        )
+
+        if loan:
+            raise HasAlreadyLoanWithBook(loan.id, book.id)
+
+        reserved_books = (
+            await self.session.scalar(
+                select(func.count())
+                .select_from(Reserve)
+                .where(
+                    Reserve.user_id == user.id,
+                )
+            )
+            or 0
+        )
+
+        already_reserved_book = await self.session.scalar(
+            select(1)
+            .select_from(Reserve)
+            .where(Reserve.user_id == user.id, Reserve.book_id == book_id)
+        )
+
+        if reserved_books > settings.MAX_RESERVED_BOOKS or already_reserved_book:
+            raise MaxReservedBooksAchieved()
+
+        reservation = Reserve(book_id=book.id, user_id=user.id)
+
+        set_created_audits(user, reservation)
+
+        self.session.add(reservation)
+        await self.session.commit()
+
+        await self.session.refresh(reservation)
+
+        return reservation

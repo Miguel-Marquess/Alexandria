@@ -40,6 +40,7 @@ jobs:
       - name: Run tests
         env:
           MAX_VALUE_LOANS: ${{ secrets.MAX_VALUE_LOANS }}
+          MAX_RESERVED_BOOKS: ${{ secrets.MAX_RESERVED_BOOKS }}
           ALGORITHM: ${{ secrets.ALGORITHM }}
           ACCESS_TOKEN_EXPIRE_MINUTES_TIME: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES_TIME }}
           TOKEN_SECRET_KEY: ${{ secrets.TOKEN_SECRET_KEY }}

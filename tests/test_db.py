@@ -29,13 +29,14 @@ async def test_create_user_db(
         assert user_db is not None
 
     assert asdict(user_db) == {
+        'created_at': time,
+        'updated_at': time,
         'id': user.id,
         'username': user.username,
         'email': user.email,
         'password': user.password,
-        'created_at': time,
-        'updated_at': time,
         'loans': [],
+        'reserve': [],
     }
 
 
